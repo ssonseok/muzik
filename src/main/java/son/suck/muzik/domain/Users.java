@@ -1,4 +1,4 @@
 package son.suck.muzik.domain;
 
-public class User {
+public class Users {
 }
