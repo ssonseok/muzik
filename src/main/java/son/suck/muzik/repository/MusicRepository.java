@@ -1,12 +1,13 @@
 package son.suck.muzik.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import son.suck.muzik.domain.Music;
 
 import java.util.List;
 
-public interface MusicRepository {
+public interface MusicRepository extends JpaRepository<Music, Long> {
     // 방 조건(장르, 시작년도, 끝년도)에 맞는 음악들을 랜덤으로 지정된 개수만큼 추출하는 쿼리
     @Query(value = "SELECT * FROM music m " +
             "WHERE m.genre = :genre " +
