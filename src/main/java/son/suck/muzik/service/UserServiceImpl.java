@@ -42,6 +42,7 @@ public class UserServiceImpl implements UserService {
         usersRepository.save(user);
     }
 
+    @Transactional
     @Override
     public Long login(LoginRequestDto request) {
         Users user = usersRepository.findByLoginId(request.getLoginId())
@@ -50,6 +51,8 @@ public class UserServiceImpl implements UserService {
         if (!user.getPassword().equals(request.getPassword())) {
             throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
         }
+
+        user.getUserStatus().updateStatus(UserOnlineStatus.ONLINE);
 
         return user.getId();
     }
