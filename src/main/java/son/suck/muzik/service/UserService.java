@@ -5,5 +5,5 @@ import son.suck.muzik.dto.SignupRequestDto;
 
 public interface UserService {
     void signup(SignupRequestDto request);
-    void login(LoginRequestDto request);
+    Long login(LoginRequestDto request);
 }

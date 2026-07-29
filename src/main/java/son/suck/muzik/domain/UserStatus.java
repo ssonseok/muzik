@@ -21,19 +21,20 @@ public class UserStatus {
     private Users user;
 
     @Column(nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private UserOnlineStatus status;
 
     @Builder
-    public UserStatus(Users user, String status) {
+    public UserStatus(Users user, UserOnlineStatus status) {
         this.user = user;
-        this.status = status;
+        this.status = (status != null) ? status : UserOnlineStatus.OFFLINE;
     }
 
     public void initUser(Users user) {
         this.user = user;
     }
 
-    public void updateStatus(String status) {
+    public void updateStatus(UserOnlineStatus status) {
         this.status = status;
     }
 }

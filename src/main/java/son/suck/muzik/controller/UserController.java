@@ -1,0 +1,37 @@
+package son.suck.muzik.controller;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import son.suck.muzik.dto.LoginRequestDto;
+import son.suck.muzik.dto.SignupRequestDto;
+import son.suck.muzik.service.UserService;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/users")
+public class UserController {
+
+    private final UserService userService;
+
+    /**
+     * 1. 회원가입 API
+     * POST http://localhost:8080/api/users/signup
+     */
+    @PostMapping("/signup")
+    public ResponseEntity<String> signup(@Valid @RequestBody SignupRequestDto request) {
+        userService.signup(request);
+        return ResponseEntity.ok("회원가입이 완료되었습니다.");
+    }
+
+    /**
+     * 2. 로그인 API
+     * POST http://localhost:8080/api/users/login
+     */
+    @PostMapping("/login")
+    public ResponseEntity<Long> login(@Valid @RequestBody LoginRequestDto request) {
+        Long userId = userService.login(request);
+        return ResponseEntity.ok(userId);
+    }
+}
