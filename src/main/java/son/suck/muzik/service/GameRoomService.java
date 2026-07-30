@@ -11,5 +11,5 @@ public interface GameRoomService {
     // 대기실 waiting 방 목록 조회
     List<GameRoomResponse> getWaitingRooms();
     // 방입장
-    void enterRoom(Long roomId);
+    void enterRoom(Long roomId, Long userId);
 }

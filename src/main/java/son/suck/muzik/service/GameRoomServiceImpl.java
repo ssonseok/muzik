@@ -31,9 +31,8 @@ public class GameRoomServiceImpl implements GameRoomService {
     @Override
     @Transactional
     public GameRoomResponse createRoom(CreateRoomRequest request) {
-        // [Mock] 1번 더미 유저를 방장으로 간주
-        Users mockUser = usersRepository.findById(1L)
-                .orElseThrow(() -> new IllegalArgumentException("테스트용 1번 유저가 DB에 없습니다."));
+        Users hostUser = usersRepository.findById(request.getHostUserId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. ID: " + request.getHostUserId()));
 
         GameRoom gameRoom = GameRoom.builder()
                 .roomName(request.getRoomName())
@@ -51,7 +50,7 @@ public class GameRoomServiceImpl implements GameRoomService {
         // 방 참여자 정보에 방장 등록
         GameParticipant host = GameParticipant.builder()
                 .gameRoom(savedRoom)
-                .user(mockUser)
+                .user(hostUser)
                 .isHost(true)
                 .build();
 
@@ -75,7 +74,7 @@ public class GameRoomServiceImpl implements GameRoomService {
      */
     @Override
     @Transactional
-    public void enterRoom(Long roomId) {
+    public void enterRoom(Long roomId, Long userId) {
         GameRoom gameRoom = gameRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
@@ -83,13 +82,12 @@ public class GameRoomServiceImpl implements GameRoomService {
             throw new IllegalStateException("이미 게임이 시작되었거나 입장할 수 없는 방입니다.");
         }
 
-        // [Mock] 2번 더미 유저를 입장자로 간주
-        Users mockUser2 = usersRepository.findById(2L)
-                .orElseThrow(() -> new IllegalArgumentException("테스트용 2번 유저가 DB에 없습니다."));
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. ID: " + userId));
 
         GameParticipant participant = GameParticipant.builder()
                 .gameRoom(gameRoom)
-                .user(mockUser2)
+                .user(user)
                 .isHost(false)
                 .build();
 

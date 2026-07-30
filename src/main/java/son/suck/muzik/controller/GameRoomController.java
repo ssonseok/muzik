@@ -50,11 +50,10 @@ public class GameRoomController {
      * POST http://localhost:8080/api/rooms/{roomId}/enter
      */
     @PostMapping("/{roomId}/enter")
-    public ResponseEntity<String> enterRoom(@PathVariable("roomId") Long roomId) {
-        // DB 참여자 테이블에 Mock 유저2 등록 처리
-        gameRoomService.enterRoom(roomId);
-
-        // 로비에 있는 사람들에게 실시간 인원수 변동을 알려주기 위해 방 목록을 다시 한번 방송
+    public ResponseEntity<String> enterRoom(
+            @PathVariable("roomId") Long roomId,
+            @RequestParam("userId") Long userId) {
+        gameRoomService.enterRoom(roomId, userId);
         List<GameRoomResponse> updatedRooms = gameRoomService.getWaitingRooms();
         messagingTemplate.convertAndSend("/topic/lobby", updatedRooms);
 
