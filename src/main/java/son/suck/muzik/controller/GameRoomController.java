@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.*;
 import son.suck.muzik.dto.CreateRoomRequest;
+import son.suck.muzik.dto.GameRoomDetailResponse;
 import son.suck.muzik.dto.GameRoomResponse;
 import son.suck.muzik.service.GameRoomService;
 
@@ -58,5 +59,15 @@ public class GameRoomController {
         messagingTemplate.convertAndSend("/topic/lobby", updatedRooms);
 
         return ResponseEntity.ok("방 입장에 성공했습니다. (실시간 로비 갱신 완료)");
+    }
+
+    /**
+     * 4. 방 상세 정보 및 참여자 목록 조회 API
+     * GET http://localhost:8080/api/rooms/{roomId}
+     */
+    @GetMapping("/{roomId}")
+    public ResponseEntity<GameRoomDetailResponse> getRoomDetail(@PathVariable("roomId") Long roomId) {
+        GameRoomDetailResponse response = gameRoomService.getRoomDetail(roomId);
+        return ResponseEntity.ok(response);
     }
 }

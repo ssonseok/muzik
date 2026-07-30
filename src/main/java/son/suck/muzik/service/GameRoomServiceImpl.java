@@ -4,6 +4,7 @@ import son.suck.muzik.domain.GameParticipant;
 import son.suck.muzik.domain.GameRoom;
 import son.suck.muzik.domain.Users;
 import son.suck.muzik.dto.CreateRoomRequest;
+import son.suck.muzik.dto.GameRoomDetailResponse;
 import son.suck.muzik.dto.GameRoomResponse;
 import son.suck.muzik.repository.GameParticipantRepository;
 import son.suck.muzik.repository.GameRoomRepository;
@@ -92,5 +93,16 @@ public class GameRoomServiceImpl implements GameRoomService {
                 .build();
 
         gameParticipantRepository.save(participant);
+    }
+
+    /**
+     * 4. 게임방 상세 정보 + 참여자 목록 조회
+     */
+    @Override
+    public GameRoomDetailResponse getRoomDetail(Long roomId) {
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다. ID: " + roomId));
+
+        return new GameRoomDetailResponse(gameRoom);
     }
 }
