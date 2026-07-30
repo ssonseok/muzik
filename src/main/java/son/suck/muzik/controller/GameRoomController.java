@@ -70,4 +70,22 @@ public class GameRoomController {
         GameRoomDetailResponse response = gameRoomService.getRoomDetail(roomId);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * 5. 게임방 퇴장 API
+     * POST http://localhost:8080/api/rooms/{roomId}/leave?userId=2
+     */
+    @PostMapping("/{roomId}/leave")
+    public ResponseEntity<String> leaveRoom(
+            @PathVariable("roomId") Long roomId,
+            @RequestParam("userId") Long userId) {
+
+        gameRoomService.leaveRoom(roomId, userId);
+
+        // 퇴장 후 로비의 인원수/방목록 갱신을 위해 웹소켓 실시간 방송
+        List<GameRoomResponse> updatedRooms = gameRoomService.getWaitingRooms();
+        messagingTemplate.convertAndSend("/topic/lobby", updatedRooms);
+
+        return ResponseEntity.ok("방에서 퇴장했습니다.");
+    }
 }

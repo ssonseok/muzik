@@ -105,4 +105,36 @@ public class GameRoomServiceImpl implements GameRoomService {
 
         return new GameRoomDetailResponse(gameRoom);
     }
+
+    /**
+     * 5. 게임방 퇴장 (방장 위임 및 빈 방 삭제 포함)
+     */
+    @Override
+    @Transactional
+    public void leaveRoom(Long roomId, Long userId) {
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다. ID: " + roomId));
+
+        // 해당 유저가 방 참여자인지 확인
+        GameParticipant participant = gameParticipantRepository.findByGameRoomIdAndUserId(roomId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 방의 참여자가 아닙니다. User ID: " + userId));
+
+        boolean wasHost = participant.isHost();
+
+        // 1. 참여자 목록에서 삭제
+        gameParticipantRepository.delete(participant);
+        gameRoom.getParticipants().remove(participant);
+
+        // 2. 남아있는 참여자가 없는 경우 -> 방 삭제
+        if (gameRoom.getParticipants().isEmpty()) {
+            gameRoomRepository.delete(gameRoom);
+            return;
+        }
+
+        // 3. 방장이 나갔고 남아있는 유저가 있는 경우 -> 방장 권한 위임
+        if (wasHost) {
+            GameParticipant nextHost = gameRoom.getParticipants().get(0); // 가장 먼저 들어온 유저
+            nextHost.updateHost(true); // isHost = true 변경 (엔티티 메서드 필요)
+        }
+    }
 }

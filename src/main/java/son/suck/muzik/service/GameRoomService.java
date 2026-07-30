@@ -15,4 +15,6 @@ public interface GameRoomService {
     void enterRoom(Long roomId, Long userId);
     // 게임방 참여자 목록 조회
     GameRoomDetailResponse getRoomDetail(Long roomId);
+    // 게임방 퇴장
+    void leaveRoom(Long roomId, Long userId);
 }
