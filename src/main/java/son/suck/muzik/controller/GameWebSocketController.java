@@ -31,7 +31,8 @@ public class GameWebSocketController {
             //  유저가 처음 들어왔을 때 웹소켓 세션에 roomId와 userId(senderId) 바인딩
             if (headerAccessor.getSessionAttributes() != null) {
                 headerAccessor.getSessionAttributes().put("roomId", message.getRoomId());
-                headerAccessor.getSessionAttributes().put("userId", message.getSenderId()); // DTO의 senderId 필드명 확인 필요
+                headerAccessor.getSessionAttributes().put("userId", message.getSenderId());
+                headerAccessor.getSessionAttributes().put("nickname", message.getSender());
             }
             message.setMessage(message.getSender() + "님이 입장하셨습니다.");
         }else if ("START".equals(message.getType())) {
