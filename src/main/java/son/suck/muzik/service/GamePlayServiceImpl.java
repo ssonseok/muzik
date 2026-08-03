@@ -14,6 +14,7 @@ import son.suck.muzik.repository.GameRoomRepository;
 import son.suck.muzik.repository.GameParticipantRepository;
 import son.suck.muzik.repository.UsersRepository;
 import son.suck.muzik.repository.MusicRepository;
+import son.suck.muzik.session.GameSession;
 
 import java.util.List;
 import java.util.Map;
@@ -30,30 +31,9 @@ public class GamePlayServiceImpl implements GamePlayService {
     private final UsersRepository usersRepository;
     private final MusicRepository musicRepository;
 
+
     private final Map<Long, GameSession> activeGames = new ConcurrentHashMap<>();
 
-    @Getter
-    @Setter
-    public static class GameSession {
-        private List<Music> playlist;
-        private int currentRound = 0;
-
-        public GameSession(List<Music> playlist) {
-            this.playlist = playlist;
-        }
-
-        public Music getCurrentMusic() {
-            return playlist.get(currentRound);
-        }
-
-        public boolean hasNextRound() {
-            return currentRound + 1 < playlist.size();
-        }
-
-        public void nextRound() {
-            this.currentRound++;
-        }
-    }
 
     /**
      * 유저 입장
@@ -202,6 +182,27 @@ public class GamePlayServiceImpl implements GamePlayService {
             return message;
         }
 
+        String sender = message.getSender();
+
+        // 스킵 투표 등록
+        boolean isNewVote = session.addSkipVote(sender);
+        if (!isNewVote) {
+            message.setType("TALK");
+            message.setMessage(sender + "님은 이미 스킵에 투표하셨습니다.");
+            return message;
+        }
+
+        int currentVotes = session.getSkipVoteCount();
+        int totalParticipants = gameRoom.getParticipants().size();
+
+        int requiredVotes = (totalParticipants + 1) / 2;
+
+        if (currentVotes < requiredVotes) {
+            message.setType("TALK");
+            message.setMessage(sender + "님이 스킵에 투표하셨습니다. (" + currentVotes + "/" + requiredVotes + "명 찬성)");
+            return message;
+        }
+
         Music skippedMusic = session.getCurrentMusic();
 
         if (session.hasNextRound()) {
@@ -209,12 +210,12 @@ public class GamePlayServiceImpl implements GamePlayService {
             Music nextMusic = session.getCurrentMusic();
 
             message.setType("SKIP_AND_NEXT");
-            message.setMessage("현재 곡을 스킵했습니다! 원곡은 '" + skippedMusic.getTitle() + "' (" + skippedMusic.getArtist() + ") 이었습니다.\n"
-                    + "다음 라운드 시작! 새로운 유튜브 ID: " + nextMusic.getYoutubeId());
+            message.setMessage("스킵 기준이 달성되었습니다! 원곡: '" + skippedMusic.getTitle() + "' (" + skippedMusic.getArtist() + ")\n"
+                    + "다음 라운드(" + (session.getCurrentRound() + 1) + "라운드) 시작! 새로운 유튜브 ID: " + nextMusic.getYoutubeId());
         } else {
-            // 마지막 곡에서 스킵이 눌린 경우 게임 종료
+            // 마지막 곡에서 스킵된 경우 게임 종료 처리
             gameRoom.updateStatus("WAITING");
-            activeGames.remove(gameRoom.getId());
+            activeGames.remove(gameRoom.getId()); // 메모리 세션 삭제
 
             String scoreBoard = gameRoom.getParticipants().stream()
                     .sorted((p1, p2) -> Integer.compare(p2.getCurrentScore(), p1.getCurrentScore()))
@@ -222,7 +223,7 @@ public class GamePlayServiceImpl implements GamePlayService {
                     .collect(Collectors.joining(", "));
 
             message.setType("GAME_END");
-            message.setMessage("마지막 곡이 스킵되어 게임이 끝났습니다! 최종 순위 -> " + scoreBoard);
+            message.setMessage("마지막 곡이 스킵되어 게임이 종료되었습니다!\n[최종 순위] -> " + scoreBoard);
         }
 
         return message;
