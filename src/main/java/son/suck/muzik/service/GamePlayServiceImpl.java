@@ -31,7 +31,6 @@ public class GamePlayServiceImpl implements GamePlayService {
     private final UsersRepository usersRepository;
     private final MusicRepository musicRepository;
 
-
     private final Map<Long, GameSession> activeGames = new ConcurrentHashMap<>();
 
 
@@ -117,6 +116,7 @@ public class GamePlayServiceImpl implements GamePlayService {
         GameRoom gameRoom = gameRoomRepository.findById(message.getRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
 
+        // 게임 진행 중이 아니면 일반 채팅 처리
         if (!"PLAYING".equals(gameRoom.getRoomStatus())) {
             message.setType("TALK");
             return message;
@@ -129,10 +129,11 @@ public class GamePlayServiceImpl implements GamePlayService {
         }
 
         Music currentMusic = session.getCurrentMusic();
-        String correctAnswer = currentMusic.getTitle();
-        String userSubmit = message.getMessage().trim().replaceAll(" ", "");
+        String correctAnswer = normalizeAnswer(currentMusic.getTitle());
+        String userSubmit = normalizeAnswer(message.getMessage());
 
-        if (correctAnswer.replaceAll(" ", "").equalsIgnoreCase(userSubmit)) {
+        // 정답을 맞춘 경우
+        if (!userSubmit.isEmpty() && correctAnswer.equals(userSubmit)) {
 
             for (GameParticipant participant : gameRoom.getParticipants()) {
                 if (participant.getUser().getNickname().equals(message.getSender())) {
@@ -141,15 +142,19 @@ public class GamePlayServiceImpl implements GamePlayService {
                 }
             }
 
+            // 다음 라운드가 남아있는 경우
             if (session.hasNextRound()) {
                 session.nextRound();
                 Music nextMusic = session.getCurrentMusic();
+
                 message.setType("ANSWER_AND_NEXT");
-                message.setMessage("[" + message.getSender() + "] 정답! '" + correctAnswer + "' (" + currentMusic.getArtist() + ")\n"
-                        + "다음 라운드를 시작합니다! 새로운 곡의 유튜브 ID: " + nextMusic.getYoutubeId());
-            } else {
+                message.setMessage("[" + message.getSender() + "] 정답! 정답은 '" + currentMusic.getTitle() + "' (" + currentMusic.getArtist() + ") 이었습니다!\n"
+                        + "다음 라운드(" + (session.getCurrentRound() + 1) + "라운드) 시작!");
+            }
+            //모든 문제를 맞춰서 게임이 완전히 끝난 경우
+            else {
                 gameRoom.updateStatus("WAITING");
-                activeGames.remove(gameRoom.getId());
+                activeGames.remove(gameRoom.getId()); // 메모리 세션 삭제로 메모리 누수 방지
 
                 String scoreBoard = gameRoom.getParticipants().stream()
                         .sorted((p1, p2) -> Integer.compare(p2.getCurrentScore(), p1.getCurrentScore()))
@@ -157,13 +162,19 @@ public class GamePlayServiceImpl implements GamePlayService {
                         .collect(Collectors.joining(", "));
 
                 message.setType("GAME_END");
-                message.setMessage("게임이 완전히 끝났습니다! 최종 순위 -> " + scoreBoard);
+                message.setMessage("모든 문제를 맞췄습니다! 게임이 종료됩니다.\n[최종 순위] -> " + scoreBoard);
             }
         } else {
+            // 정답이 아니면 일반 채팅으로 처리
             message.setType("TALK");
         }
 
         return message;
+    }
+
+    private String normalizeAnswer(String input) {
+        if (input == null) return "";
+        return input.replaceAll("[^a-zA-Z0-9가-힣]", "").toLowerCase();
     }
 
     /**
