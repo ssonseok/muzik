@@ -88,4 +88,6 @@ public class GameRoomController {
 
         return ResponseEntity.ok("방에서 퇴장했습니다.");
     }
+
+
 }
