@@ -35,7 +35,7 @@ public class GamePlayServiceImpl implements GamePlayService {
 
 
     /**
-     * 유저 입장
+     * 유저 입장 ->게임 도중에 참가할지말지 고민중
      */
     @Override
     @Transactional
@@ -73,7 +73,7 @@ public class GamePlayServiceImpl implements GamePlayService {
     }
 
     /**
-     * 게임 시작
+     * 게임 시작 -> 방장만 시작하는거 화면에서 구현할지 여기에 추가할지
      */
     @Override
     @Transactional
