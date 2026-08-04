@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>음악 퀴즈 - 로그인 / 회원가입 테스트</title>
+</head>
+<body>
+
+<h2>🎵 뮤직 퀴즈 게임 - 접속 테스트</h2>
+
+<!-- 1. 회원가입 폼 -->
+<fieldset style="margin-bottom: 20px;">
+    <legend><b>회원가입 (Sign Up)</b></legend>
+    <form id="signupForm">
+        <div>
+            <label>아이디/이메일: </label>
+            <input type="text" id="signupUsername" required>
+        </div>
+        <div>
+            <label>비밀번호: </label>
+            <input type="password" id="signupPassword" required>
+        </div>
+        <div>
+            <label>닉네임: </label>
+            <input type="text" id="signupNickname" required>
+        </div>
+        <button type="submit" style="margin-top: 10px;">회원가입 완료</button>
+    </form>
+</fieldset>
+
+<!-- 2. 로그인 폼 -->
+<fieldset>
+    <legend><b>로그인 (Log In)</b></legend>
+    <form id="loginForm">
+        <div>
+            <label>아이디/이메일: </label>
+            <input type="text" id="loginUsername" required>
+        </div>
+        <div>
+            <label>비밀번호: </label>
+            <input type="password" id="loginPassword" required>
+        </div>
+        <div>
+            <label>닉네임 (웹소켓 식별용): </label>
+            <input type="text" id="loginNickname" placeholder="채팅에 표시될 닉네임" required>
+        </div>
+        <button type="submit" style="margin-top: 10px;">로그인하기</button>
+    </form>
+</fieldset>
+
+<!-- 결과 안내 문구 -->
+<div id="resultMessage" style="margin-top: 15px; color: blue; font-weight: bold;"></div>
+
+<script>
+    const BASE_URL = 'http://localhost:8080/api/users';
+
+    // 1. 회원가입 처리
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const signupData = {
+            username: document.getElementById('signupUsername').value,
+            password: document.getElementById('signupPassword').value,
+            nickname: document.getElementById('signupNickname').value
+        };
+
+        try {
+            const response = await fetch(`${BASE_URL}/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(signupData)
+            });
+
+            const resultText = await response.text();
+
+            if (response.ok) {
+                alert('회원가입 성공! 로그인해 주세요.');
+                document.getElementById('resultMessage').innerText = "회원가입 완료: " + resultText;
+            } else {
+                alert('회원가입 실패: ' + resultText);
+                document.getElementById('resultMessage').innerText = "오류: " + resultText;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('서버 연결 실패');
+        }
+    });
+
+    // 2. 로그인 처리
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const loginData = {
+            username: document.getElementById('loginUsername').value,
+            password: document.getElementById('loginPassword').value
+        };
+        const nickname = document.getElementById('loginNickname').value;
+
+        try {
+            const response = await fetch(`${BASE_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(loginData)
+            });
+
+            if (response.ok) {
+                // 컨트롤러에서 ResponseEntity.ok(userId)로 Long 타입을 리턴함
+                const userId = await response.json();
+
+                // 다음 화면(대기실)에서 사용할 세션 유저 정보 저장
+                localStorage.setItem('userId', userId);
+                localStorage.setItem('nickname', nickname);
+
+                alert(`로그인 성공! (User ID: ${userId}, Nickname: ${nickname})`);
+
+                // 대기실 화면(lobby.html)으로 이동
+                window.location.href = 'lobby.html';
+            } else {
+                const errorText = await response.text();
+                alert('로그인 실패: ' + errorText);
+                document.getElementById('resultMessage').innerText = "로그인 실패: " + errorText;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('서버 연결 실패');
+        }
+    });
+</script>
+</body>
+</html>
