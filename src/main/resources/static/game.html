@@ -2,175 +2,214 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Muzik 퀴즈 게임 테스트 룸</title>
+    <title>게임방 - 뮤직 퀴즈</title>
+    <!-- 웹소켓 STOMP & YouTube IFrame API -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-        .box { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; background: white; border-radius: 5px; }
-        #chatArea { height: 200px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; background: #fafafa; }
-        .system { color: #888; font-style: italic; }
-        .answer { color: green; font-weight: bold; }
-        .end { color: red; font-weight: bold; }
-    </style>
+    <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
 
-<h2>🎵 Muzik 게임 실시간 연동 테스트 통합 창</h2>
-
-<div class="box">
-    <h3>1단계: 웹소켓 접속 및 방 입장</h3>
-    <label>DB에 있는 유저 닉네임: </label>
-    <input type="text" id="sender" value="참여자꼬북이" placeholder="DB의 nickname 입력">
-    <label> 테스트할 방 ID (Room ID): </label>
-    <input type="number" id="roomId" value="1" style="width: 50px;">
-    <button onclick="connectAndEnter()">접속 및 입장 (ENTER)</button>
+<h2>🎵 뮤직 퀴즈 - 게임방 <span id="roomTitle"></span></h2>
+<div>
+    <span>접속자: <b id="myInfo"></b></span> |
+    <button onclick="leaveRoom()" style="background-color: #ffcccc;">방 나가기</button>
 </div>
 
-<div class="box">
-    <h3>2단계: 게임 진행 제어</h3>
-    <button onclick="startGame()" style="background: #4CAF50; color: white; padding: 5px 15px;">🚀 게임 시작 (START)</button>
-    <button onclick="skipCurrent()" style="background: #FF9800; color: white; padding: 5px 15px;">⏩ 곡 스킵 (SKIP)</button>
+<hr>
+
+<!-- 1. 방장 전용 게임 시작 버튼 & 게임 정보 -->
+<div style="margin-bottom: 15px; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
+    <button id="startBtn" onclick="sendStart()" style="font-weight: bold; padding: 5px 15px;">🎮 게임 시작 (방장 전용)</button>
+    <span id="gameStatusText" style="margin-left: 10px; color: darkblue; font-weight: bold;">대기 중...</span>
 </div>
 
-<div class="box">
-    <h3>3단계: 실시간 채팅 / 정답 입력</h3>
-    <div id="chatArea"></div>
-    <br>
-    <input type="text" id="messageInput" placeholder="정답 또는 대화를 입력하세요..." style="width: 300px;" onkeypress="if(event.keyCode==13) sendMessage()">
-    <button onclick="sendMessage()">전송</button>
+<!-- 2. 유튜브 플레이어 (숨김 처리하여 오디오만 재생) -->
+<div id="playerContainer" style="display: none;">
+    <div id="youtubePlayer"></div>
 </div>
 
-<div class="box">
-    <h3>4단계: 유튜브 오디오 플레이어 상태</h3>
-    <div id="player"></div>
-</div>
+<!-- 3. 실시간 채팅 / 정답 입력 & 스킵 영역 -->
+<fieldset style="margin-bottom: 15px;">
+    <legend><b>실시간 채팅 및 정답 입력</b></legend>
+
+    <!-- 채팅 메시지 창 -->
+    <div id="chatBox" style="width: 100%; height: 250px; border: 1px solid #ccc; overflow-y: scroll; padding: 5px; background-color: #fafafa; box-sizing: border-box;">
+        <p style="color: gray;">[알림] 게임방에 입장하셨습니다. 채팅으로 정답을 맞혀보세요!</p>
+    </div>
+
+    <!-- 입력 폼 & 스킵 버튼 -->
+    <form id="chatForm" style="margin-top: 10px; display: flex; gap: 5px;">
+        <input type="text" id="chatInput" placeholder="정답 또는 채팅 메시지 입력..." style="flex: 1;" autocomplete="off" required>
+        <button type="submit">전송</button>
+        <button type="button" onclick="sendSkip()" style="background-color: #ffe680;">⏭️ 과반수 스킵</button>
+    </form>
+</fieldset>
 
 <script>
+    const API_BASE = 'http://localhost:8080/api/rooms';
+
+    // URL 쿼리 스트링에서 roomId 추출 (?roomId=12)
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('roomId');
+
+    const userId = parseInt(localStorage.getItem('userId'));
+    const nickname = localStorage.getItem('nickname');
+
+    if (!roomId || !userId) {
+        alert("잘못된 접근입니다.");
+        window.location.href = 'lobby.html';
+    } else {
+        document.getElementById('myInfo').innerText = `${nickname} (ID: ${userId})`;
+        document.getElementById('roomTitle').innerText = `#${roomId}`;
+    }
+
     let stompClient = null;
-    let currentRoomId = 1;
-    let currentSender = "";
-    let player = null;
+    let ytPlayer = null;
+    let isPlayerReady = false;
 
-    // 1. 유튜브 iframe API 로드
-    let tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    let firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    // 유튜브 플레이어 초기화 (소리만 들리게 200x200 크기로 띄움. 실제 서비스에선 0x0)
+    // --- 1. YouTube API 초기화 ---
     function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-            height: '200',
-            width: '350',
-            videoId: '', // 처음엔 비워둠
-            playerVars: { 'autoplay': 1, 'controls': 1 }
+        ytPlayer = new YT.Player('youtubePlayer', {
+            height: '0',
+            width: '0',
+            events: {
+                'onReady': function() { isPlayerReady = true; }
+            }
         });
     }
 
-    // 2. 웹소켓 연결 및 방 구독 (ENTER 신호 포함)
-    function connectAndEnter() {
-        currentRoomId = document.getElementById('roomId').value;
-        currentSender = document.getElementById('sender').value;
+    // --- 2. 페이지 로드 시 웹소켓 연결 ---
+    window.onload = function() {
+        connectGameSocket();
+    };
 
-        // 백엔드의 웹소켓 엔드포인트(/ws)로 SockJS 연결
-        let socket = new SockJS('/ws');
+    // --- 3. 게임방 웹소켓 연결 (/topic/rooms/{roomId}) ---
+    function connectGameSocket() {
+        const socket = new SockJS('http://localhost:8080/ws');
         stompClient = Stomp.over(socket);
+        stompClient.debug = null; // 필요시 콘솔 로그 활성화
 
         stompClient.connect({}, function (frame) {
-            appendChat("System", "백엔드 웹소켓 서버에 연결되었습니다!", "system");
+            console.log('게임방 웹소켓 연결 성공!');
 
-            // 해당 방 번호의 채널을 구독 (백엔드가 보내는 메시지 귀 기울이기)
-            stompClient.subscribe('/topic/rooms/' + currentRoomId, function (response) {
-                let msg = JSON.parse(response.body);
-                handleIncomingMessage(msg);
+            // 해당 게임방 채널 구독
+            stompClient.subscribe(`/topic/rooms/${roomId}`, function (message) {
+                const msgData = JSON.parse(message.body);
+                handleIncomingMessage(msgData);
             });
 
-            // 연결 성공하자마자 백엔드 서비스로 ENTER 패킷 전송
-            stompClient.send("/app/game/chat", {}, JSON.stringify({
-                roomId: currentRoomId,
-                sender: currentSender,
-                message: "",
-                type: "ENTER"
+            // 게임방 입장 알림 메시지 전송 (ENTER)
+            stompClient.send(`/app/rooms/${roomId}/chat`, {}, JSON.stringify({
+                type: 'ENTER',
+                senderId: userId,
+                senderNickname: nickname,
+                content: `${nickname}님이 입장하셨습니다.`
             }));
 
         }, function (error) {
-            alert("웹소켓 연결 실패! 서버가 켜져 있는지 확인하세요.");
+            console.error('게임방 웹소켓 연결 에러:', error);
         });
     }
 
-    // 3. 백엔드에서 실시간으로 날아온 메시지(신호) 처리 센터
-    function handleIncomingMessage(msg) {
-        if (msg.type === "START") {
-            appendChat("System", "📢 게임이 시작되었습니다! 첫 번째 곡이 재생됩니다.", "system");
-            // 백엔드가 준 유튜브 ID로 음악 바로 재생!!
-            if(player && msg.message) player.loadVideoById(msg.message);
+    // --- 4. 서버 수신 메시지 처리 (`processedMessage`) ---
+    function handleIncomingMessage(data) {
+        const chatBox = document.getElementById('chatBox');
+
+        // A. 일반 채팅 및 정답/스킵 알림 메시지 출력
+        if (data.content) {
+            const p = document.createElement('p');
+            p.style.margin = "3px 0";
+
+            if (data.type === 'TALK') {
+                p.innerHTML = `<b>[${data.senderNickname}]</b>: ${data.content}`;
+            } else if (data.type === 'ANSWER_CORRECT') {
+                p.style.color = "green";
+                p.style.fontWeight = "bold";
+                p.innerHTML = `🎉 [정답] ${data.content}`;
+            } else if (data.type === 'SKIP_VOTE') {
+                p.style.color = "orange";
+                p.innerHTML = `⏭️ ${data.content}`;
+            } else if (data.type === 'ENTER' || data.type === 'LEAVE') {
+                p.style.color = "gray";
+                p.innerHTML = `<i>${data.content}</i>`;
+            } else {
+                p.innerText = data.content;
+            }
+
+            chatBox.appendChild(p);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-        else if (msg.type === "ANSWER_AND_NEXT") {
-            appendChat("정답 발생", msg.message, "answer");
-            // 정답 맞췄으니 다음 라운드 유튜브 ID로 자동 교체!!
-            let nextYoutubeId = msg.message.split("새로운 곡의 유튜브 ID: ")[1]?.trim();
-            if(player && nextYoutubeId) player.loadVideoById(nextYoutubeId);
+
+        // B. 유튜브 음악 재생 (START, NEXT_ROUND, PLAY)
+        if (data.youtubeId && isPlayerReady) {
+            console.log("유튜브 재생 시작 - ID:", data.youtubeId);
+            ytPlayer.loadVideoById(data.youtubeId);
+            ytPlayer.playVideo();
+
+            if (data.round) {
+                document.getElementById('gameStatusText').innerText = `🎵 ${data.round}라운드 진행 중!`;
+            }
         }
-        else if (msg.type === "SKIP_AND_NEXT") {
-            appendChat("스킵 발생", msg.message, "system");
-            let nextYoutubeId = msg.message.split("새로운 유튜브 ID: ")[1]?.trim();
-            if(player && nextYoutubeId) player.loadVideoById(nextYoutubeId);
-        }
-        else if (msg.type === "GAME_END") {
-            appendChat("게임 종료", msg.message, "end");
-            if(player) player.stopVideo(); // 노래 끄기
-        }
-        else {
-            // 일반 TALK 잡담 및 오답들
-            appendChat(msg.sender, msg.message, "");
+
+        // C. 라운드 종료 / 게임 종료 시 음악 정지
+        if (data.type === 'GAME_OVER') {
+            if (ytPlayer && isPlayerReady) ytPlayer.stopVideo();
+            document.getElementById('gameStatusText').innerText = "🏆 게임이 종료되었습니다!";
         }
     }
 
-    // 4. 메시지 및 정답 전송 (TALK)
-    function sendMessage() {
-        let input = document.getElementById('messageInput');
-        if (!input.value.trim() || !stompClient) return;
+    // --- 5. 버튼 및 폼 액션 ---
 
-        stompClient.send("/app/game/chat", {}, JSON.stringify({
-            roomId: currentRoomId,
-            sender: currentSender,
-            message: input.value,
-            type: "TALK"
-        }));
-        input.value = "";
+    // A. 채팅 및 정답 입력 (TALK)
+    document.getElementById('chatForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        const content = input.value.trim();
+
+        if (content && stompClient) {
+            stompClient.send(`/app/rooms/${roomId}/chat`, {}, JSON.stringify({
+                type: 'TALK',
+                senderId: userId,
+                senderNickname: nickname,
+                content: content
+            }));
+            input.value = '';
+        }
+    });
+
+    // B. 게임 시작 (START)
+    function sendStart() {
+        if (stompClient) {
+            stompClient.send(`/app/rooms/${roomId}/chat`, {}, JSON.stringify({
+                type: 'START',
+                senderId: userId,
+                senderNickname: nickname
+            }));
+        }
     }
 
-    // 5. 방장의 게임 시작 요청 (START)
-    function startGame() {
-        if(!stompClient) return alert("먼저 접속 및 입장 버튼을 누르세요.");
-        stompClient.send("/app/game/chat", {}, JSON.stringify({
-            roomId: currentRoomId,
-            sender: currentSender,
-            message: "",
-            type: "START"
-        }));
+    // C. 과반수 스킵 투표 (SKIP)
+    function sendSkip() {
+        if (stompClient) {
+            stompClient.send(`/app/rooms/${roomId}/chat`, {}, JSON.stringify({
+                type: 'SKIP',
+                senderId: userId,
+                senderNickname: nickname
+            }));
+        }
     }
 
-    // 6. 라운드 스킵 요청 (SKIP)
-    function skipCurrent() {
-        if(!stompClient) return alert("게임 진행 중이 아닙니다.");
-        stompClient.send("/app/game/chat", {}, JSON.stringify({
-            roomId: currentRoomId,
-            sender: currentSender,
-            message: "",
-            type: "SKIP"
-        }));
-    }
-
-    // 채팅창에 텍스트 그려주는 헬퍼 함수
-    function appendChat(sender, text, className) {
-        let chatArea = document.getElementById('chatArea');
-        let p = document.createElement('p');
-        if(className) p.className = className;
-        p.innerText = sender + ": " + text;
-        chatArea.appendChild(p);
-        chatArea.scrollTop = chatArea.scrollHeight;
+    // D. 방 나가기
+    async function leaveRoom() {
+        try {
+            await fetch(`${API_BASE}/${roomId}/leave?userId=${userId}`, { method: 'POST' });
+        } catch (e) {
+            console.error(e);
+        } finally {
+            if (stompClient) stompClient.disconnect();
+            window.location.href = 'lobby.html';
+        }
     }
 </script>
 </body>
