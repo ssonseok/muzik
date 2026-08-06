@@ -88,7 +88,8 @@
 </fieldset>
 
 <script>
-    const API_BASE = 'http://localhost:8080/api/rooms';
+    const SERVER_URL = 'http://localhost:8080';
+    const API_BASE = `${SERVER_URL}/api/rooms`;
 
     const userId = localStorage.getItem('userId');
     const nickname = localStorage.getItem('nickname');
@@ -107,7 +108,7 @@
         connectLobbySocket();
     };
 
-    // 방 목록 불러오기
+    // 방 목록 불러오기 (REST API)
     async function fetchRooms() {
         try {
             const response = await fetch(API_BASE);
@@ -121,32 +122,32 @@
     }
 
     // 방 목록 HTML 테이블 렌더링
-    function renderRoomList(rooms) {
-        const tbody = document.getElementById('roomListTable');
-        tbody.innerHTML = '';
+function renderRoomList(rooms) {
+    const tbody = document.getElementById('roomListTable');
+    tbody.innerHTML = '';
 
-        if (!rooms || rooms.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6">생성된 방이 없습니다. 방을 만들어보세요!</td></tr>';
-            return;
-        }
-
-        rooms.forEach(room => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${room.roomId}</td>
-                <td>${room.roomName || room.title}</td>
-                <td>${room.genre || '전체'}</td>
-                <td>${room.currentParticipants || 1} / ${room.maxPlayers || room.maxParticipants}</td>
-                <td>${room.status || 'WAITING'}</td>
-                <td>
-                    <button onclick="enterRoom(${room.roomId})">입장하기</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+    if (!rooms || rooms.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">생성된 방이 없습니다. 방을 만들어보세요!</td></tr>';
+        return;
     }
 
-    // 방 생성 요청 (기존 짜놓은 DTO 스펙 완벽 반영)
+    rooms.forEach(room => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${room.roomId}</td>
+            <td>${room.roomName}</td>
+            <td>${room.genre || '전체'}</td>
+            <td><b>${room.currentPlayers} / ${room.maxPlayers}</b></td>
+            <td>${room.roomStatus || 'WAITING'}</td>
+            <td>
+                <button onclick="enterRoom(${room.roomId})">입장하기</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+    // 방 생성 요청
     document.getElementById('createRoomForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -206,15 +207,22 @@
 
     // 로비 웹소켓 구독
     function connectLobbySocket() {
-        const socket = new SockJS('http://localhost:8080/ws');
+        const socket = new SockJS(`${SERVER_URL}/ws`);
         stompClient = Stomp.over(socket);
+
+        // STOMP 디버그 로그 끄기 (필요시 주석 해제)
         stompClient.debug = null;
 
         stompClient.connect({}, function (frame) {
+            console.log("로비 웹소켓 연결 성공!");
+
             stompClient.subscribe('/topic/lobby', function (message) {
+                console.log("로비 실시간 데이터 수신:", message.body);
                 const updatedRooms = JSON.parse(message.body);
                 renderRoomList(updatedRooms);
             });
+        }, function(error) {
+            console.error("로비 웹소켓 연결 에러:", error);
         });
     }
 </script>

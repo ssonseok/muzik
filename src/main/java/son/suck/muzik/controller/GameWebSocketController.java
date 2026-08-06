@@ -43,6 +43,8 @@ public class GameWebSocketController {
             }
             //  서비스의 processEnter를 호출하여 DB 검증 및 입장 메시지 처리
             processedMessage = gamePlayService.processEnter(message);
+
+            messagingTemplate.convertAndSend("/topic/lobby", gameRoomService.getWaitingRooms());
         }
         // 게임 시작
         else if ("START".equals(message.getType())) {

@@ -27,9 +27,6 @@ public class GameRoomController {
     public ResponseEntity<GameRoomResponse> createRoom(@RequestBody CreateRoomRequest request) {
         // DB에 방을 저장하고 방장 입장 처리
         GameRoomResponse response = gameRoomService.createRoom(request);
-
-        // [웹소켓 실시간 방송] 방이 새로 만들어졌으니, 로비(대기실)를 보고 있는 모든 유저에게
-        // "방 목록 갱신해라!" 하고 최신 방 목록을 실시간으로 밀어넣어 줍니다.
         List<GameRoomResponse> updatedRooms = gameRoomService.getWaitingRooms();
         messagingTemplate.convertAndSend("/topic/lobby", updatedRooms);
 

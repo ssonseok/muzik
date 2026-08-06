@@ -20,11 +20,11 @@
 
 <!-- 1. 방장 전용 게임 시작 버튼 & 게임 정보 -->
 <div style="margin-bottom: 15px; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
-    <button id="startBtn" onclick="sendStart()" style="font-weight: bold; padding: 5px 15px;">🎮 게임 시작 (방장 전용)</button>
+    <button id="startBtn" onclick="sendStart()" style="font-weight: bold; padding: 5px 15px;">🎮 게임 시작</button>
     <span id="gameStatusText" style="margin-left: 10px; color: darkblue; font-weight: bold;">대기 중...</span>
 </div>
 
-<!-- 2. 유튜브 플레이어 (숨김 처리하여 오디오만 재생) -->
+<!-- 2. 유튜브 플레이어 (오디오 재생용) -->
 <div id="playerContainer" style="display: none;">
     <div id="youtubePlayer"></div>
 </div>
@@ -49,16 +49,16 @@
 <script>
     const API_BASE = 'http://localhost:8080/api/rooms';
 
-    // URL 쿼리 스트링에서 roomId 추출 (?roomId=12)
     const urlParams = new URLSearchParams(window.location.search);
-    const roomId = urlParams.get('roomId');
+    const roomId = parseInt(urlParams.get('roomId'));
 
+    // 💡 다중 탭 테스트를 위해 sessionStorage 사용
     const userId = parseInt(localStorage.getItem('userId'));
-    const nickname = localStorage.getItem('nickname');
+        const nickname = localStorage.getItem('nickname');
 
     if (!roomId || !userId) {
-        alert("잘못된 접근입니다.");
-        window.location.href = 'lobby.html';
+        alert("잘못된 접근입니다. 다시 로그인해 주세요.");
+        window.location.href = 'login.html';
     } else {
         document.getElementById('myInfo').innerText = `${nickname} (ID: ${userId})`;
         document.getElementById('roomTitle').innerText = `#${roomId}`;
@@ -88,23 +88,24 @@
     function connectGameSocket() {
         const socket = new SockJS('http://localhost:8080/ws');
         stompClient = Stomp.over(socket);
-        stompClient.debug = null; // 필요시 콘솔 로그 활성화
+        stompClient.debug = null;
 
         stompClient.connect({}, function (frame) {
             console.log('게임방 웹소켓 연결 성공!');
 
-            // 해당 게임방 채널 구독
+            // 서버가 브로드캐스팅하는 /topic/rooms/{roomId} 구독
             stompClient.subscribe(`/topic/rooms/${roomId}`, function (message) {
                 const msgData = JSON.parse(message.body);
                 handleIncomingMessage(msgData);
             });
 
-            // 게임방 입장 알림 메시지 전송 (ENTER)
-            stompClient.send(`/app/rooms/${roomId}/chat`, {}, JSON.stringify({
+            // 💡 백엔드 @MessageMapping("/game/chat") 및 ChatMessageDto 규격에 맞춰 ENTER 메시지 전송
+            stompClient.send('/app/game/chat', {}, JSON.stringify({
                 type: 'ENTER',
+                roomId: roomId,
                 senderId: userId,
-                senderNickname: nickname,
-                content: `${nickname}님이 입장하셨습니다.`
+                sender: nickname,
+                message: `${nickname}님이 입장하셨습니다.`
             }));
 
         }, function (error) {
@@ -116,32 +117,32 @@
     function handleIncomingMessage(data) {
         const chatBox = document.getElementById('chatBox');
 
-        // A. 일반 채팅 및 정답/스킵 알림 메시지 출력
-        if (data.content) {
+        // A. 채팅 및 시스템 메시지 출력 (ChatMessageDto: message, sender)
+        if (data.message) {
             const p = document.createElement('p');
             p.style.margin = "3px 0";
 
             if (data.type === 'TALK') {
-                p.innerHTML = `<b>[${data.senderNickname}]</b>: ${data.content}`;
+                p.innerHTML = `<b>[${data.sender || '알림'}]</b>: ${data.message}`;
             } else if (data.type === 'ANSWER_CORRECT') {
                 p.style.color = "green";
                 p.style.fontWeight = "bold";
-                p.innerHTML = `🎉 [정답] ${data.content}`;
-            } else if (data.type === 'SKIP_VOTE') {
+                p.innerHTML = `🎉 [정답] ${data.message}`;
+            } else if (data.type === 'SKIP_VOTE' || data.type === 'SKIP') {
                 p.style.color = "orange";
-                p.innerHTML = `⏭️ ${data.content}`;
+                p.innerHTML = `⏭️ ${data.message}`;
             } else if (data.type === 'ENTER' || data.type === 'LEAVE') {
                 p.style.color = "gray";
-                p.innerHTML = `<i>${data.content}</i>`;
+                p.innerHTML = `<i>${data.message}</i>`;
             } else {
-                p.innerText = data.content;
+                p.innerText = data.message;
             }
 
             chatBox.appendChild(p);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // B. 유튜브 음악 재생 (START, NEXT_ROUND, PLAY)
+        // B. 유튜브 음악 재생 (백엔드에서 youtubeId를 내려주는 경우)
         if (data.youtubeId && isPlayerReady) {
             console.log("유튜브 재생 시작 - ID:", data.youtubeId);
             ytPlayer.loadVideoById(data.youtubeId);
@@ -152,27 +153,28 @@
             }
         }
 
-        // C. 라운드 종료 / 게임 종료 시 음악 정지
+        // C. 게임 종료
         if (data.type === 'GAME_OVER') {
             if (ytPlayer && isPlayerReady) ytPlayer.stopVideo();
             document.getElementById('gameStatusText').innerText = "🏆 게임이 종료되었습니다!";
         }
     }
 
-    // --- 5. 버튼 및 폼 액션 ---
+    // --- 5. 메시지 전송 함수 (백엔드 /app/game/chat 으로 통합 전송) ---
 
-    // A. 채팅 및 정답 입력 (TALK)
+    // A. 일반 채팅 및 정답 입력
     document.getElementById('chatForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const input = document.getElementById('chatInput');
         const content = input.value.trim();
 
         if (content && stompClient) {
-            stompClient.send(`/app/rooms/${roomId}/chat`, {}, JSON.stringify({
+            stompClient.send('/app/game/chat', {}, JSON.stringify({
                 type: 'TALK',
+                roomId: roomId,
                 senderId: userId,
-                senderNickname: nickname,
-                content: content
+                sender: nickname,
+                message: content
             }));
             input.value = '';
         }
@@ -181,10 +183,12 @@
     // B. 게임 시작 (START)
     function sendStart() {
         if (stompClient) {
-            stompClient.send(`/app/rooms/${roomId}/chat`, {}, JSON.stringify({
+            stompClient.send('/app/game/chat', {}, JSON.stringify({
                 type: 'START',
+                roomId: roomId,
                 senderId: userId,
-                senderNickname: nickname
+                sender: nickname,
+                message: '게임 시작'
             }));
         }
     }
@@ -192,10 +196,12 @@
     // C. 과반수 스킵 투표 (SKIP)
     function sendSkip() {
         if (stompClient) {
-            stompClient.send(`/app/rooms/${roomId}/chat`, {}, JSON.stringify({
+            stompClient.send('/app/game/chat', {}, JSON.stringify({
                 type: 'SKIP',
+                roomId: roomId,
                 senderId: userId,
-                senderNickname: nickname
+                sender: nickname,
+                message: '스킵 투표'
             }));
         }
     }
