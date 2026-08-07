@@ -13,4 +13,6 @@ public class ChatMessageDto {
     private String sender;
     private String message;
     private String type;  // 메시지 타입 (TALK: 채팅, ENTER: 입장, ANSWER: 정답 시도 등)
+    private String youtubeId;
+    private Integer round;
 }

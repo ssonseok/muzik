@@ -67,6 +67,7 @@ public class GamePlayServiceImpl implements GamePlayService {
         }
 
         int currentCount = gameRoom.getParticipants().size();
+        message.setType("ENTER");
         message.setMessage(user.getNickname() + "님이 입장하셨습니다. [" + currentCount + "/" + gameRoom.getMaxPlayers() + "]");
 
         return message;
@@ -102,7 +103,9 @@ public class GamePlayServiceImpl implements GamePlayService {
         Music firstMusic = gameSession.getCurrentMusic();
 
         message.setType("START");
-        message.setMessage(firstMusic.getYoutubeId());
+        message.setRound(1);
+        message.setYoutubeId(firstMusic.getYoutubeId());
+        message.setMessage("게임이 시작되었습니다! (1/" + quizSet.size() + " 라운드)");
 
         return message;
     }
@@ -148,6 +151,10 @@ public class GamePlayServiceImpl implements GamePlayService {
                 Music nextMusic = session.getCurrentMusic();
 
                 message.setType("ANSWER_AND_NEXT");
+
+                message.setRound(session.getCurrentRound() + 1);
+                message.setYoutubeId(nextMusic.getYoutubeId());
+
                 message.setMessage("[" + message.getSender() + "] 정답! 정답은 '" + currentMusic.getTitle() + "' (" + currentMusic.getArtist() + ") 이었습니다!\n"
                         + "다음 라운드(" + (session.getCurrentRound() + 1) + "라운드) 시작!");
             }
@@ -162,6 +169,7 @@ public class GamePlayServiceImpl implements GamePlayService {
                         .collect(Collectors.joining(", "));
 
                 message.setType("GAME_END");
+                message.setYoutubeId(null);
                 message.setMessage("모든 문제를 맞췄습니다! 게임이 종료됩니다.\n[최종 순위] -> " + scoreBoard);
             }
         } else {
@@ -221,8 +229,12 @@ public class GamePlayServiceImpl implements GamePlayService {
             Music nextMusic = session.getCurrentMusic();
 
             message.setType("SKIP_AND_NEXT");
-            message.setMessage("스킵 기준이 달성되었습니다! 원곡: '" + skippedMusic.getTitle() + "' (" + skippedMusic.getArtist() + ")\n"
-                    + "다음 라운드(" + (session.getCurrentRound() + 1) + "라운드) 시작! 새로운 유튜브 ID: " + nextMusic.getYoutubeId());
+
+            message.setRound(session.getCurrentRound() + 1);
+            message.setYoutubeId(nextMusic.getYoutubeId());
+
+            message.setMessage("과반수 찬성으로 스킵되었습니다! 원곡: '" + skippedMusic.getTitle() + "' (" + skippedMusic.getArtist() + ")\n"
+                    + "다음 라운드(" + (session.getCurrentRound() + 1) + "라운드) 시작!");
         } else {
             // 마지막 곡에서 스킵된 경우 게임 종료 처리
             gameRoom.updateStatus("WAITING");
@@ -234,6 +246,7 @@ public class GamePlayServiceImpl implements GamePlayService {
                     .collect(Collectors.joining(", "));
 
             message.setType("GAME_END");
+            message.setYoutubeId(null);
             message.setMessage("마지막 곡이 스킵되어 게임이 종료되었습니다!\n[최종 순위] -> " + scoreBoard);
         }
 
