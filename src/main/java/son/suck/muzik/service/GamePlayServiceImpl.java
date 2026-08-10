@@ -38,35 +38,17 @@ public class GamePlayServiceImpl implements GamePlayService {
      * 유저 입장 ->게임 도중에 참가할지말지 고민중
      */
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public ChatMessageDto processEnter(ChatMessageDto message) {
         GameRoom gameRoom = gameRoomRepository.findById(message.getRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
-        if (gameRoom.getParticipants().size() >= gameRoom.getMaxPlayers()) {
-            throw new IllegalStateException("방이 꽉 차서 입장할 수 없습니다.");
-        }
-
         Users user = usersRepository.findByNickname(message.getSender())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저닉네임입니다: " + message.getSender()));
 
-        boolean isAlreadyJoined = gameRoom.getParticipants().stream()
-                .anyMatch(p -> p.getUser().getId().equals(user.getId()));
-
-        if (!isAlreadyJoined) {
-            boolean isHost = gameRoom.getParticipants().isEmpty();
-
-            GameParticipant participant = GameParticipant.builder()
-                    .user(user)
-                    .gameRoom(gameRoom)
-                    .isHost(isHost)
-                    .build();
-
-            gameParticipantRepository.save(participant);
-            gameRoom.getParticipants().add(participant);
-        }
-
+        // DB 저장은 enterRoom에서 이미 끝났으므로, 현재 최신 인원수만 가져와서 메시지 생성
         int currentCount = gameRoom.getParticipants().size();
+
         message.setType("ENTER");
         message.setMessage(user.getNickname() + "님이 입장하셨습니다. [" + currentCount + "/" + gameRoom.getMaxPlayers() + "]");
 

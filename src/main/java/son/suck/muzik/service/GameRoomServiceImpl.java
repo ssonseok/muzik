@@ -86,13 +86,28 @@ public class GameRoomServiceImpl implements GameRoomService {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. ID: " + userId));
 
+        boolean isAlreadyJoined = gameRoom.getParticipants().stream()
+                .anyMatch(p -> p.getUser().getId().equals(userId));
+
+        if (isAlreadyJoined) {
+            return; // 이미 들어가 있으면 추가 저장 없이 정상 반환
+        }
+
+        // 정원 초과 검사
+        if (gameRoom.getParticipants().size() >= gameRoom.getMaxPlayers()) {
+            throw new IllegalStateException("방이 꽉 차서 입장할 수 없습니다.");
+        }
+
+        boolean isHost = gameRoom.getParticipants().isEmpty();
+
         GameParticipant participant = GameParticipant.builder()
                 .gameRoom(gameRoom)
                 .user(user)
-                .isHost(false)
+                .isHost(isHost)
                 .build();
 
         gameParticipantRepository.save(participant);
+        gameRoom.getParticipants().add(participant);
     }
 
     /**
@@ -121,9 +136,10 @@ public class GameRoomServiceImpl implements GameRoomService {
 
         boolean wasHost = participant.isHost();
 
-        // 1. 참여자 목록에서 삭제
-        gameParticipantRepository.delete(participant);
+        //참여자 목록에서 삭제
         gameRoom.getParticipants().remove(participant);
+        gameParticipantRepository.delete(participant);
+        gameParticipantRepository.flush();
 
         // 2. 남아있는 참여자가 없는 경우 -> 방 삭제
         if (gameRoom.getParticipants().isEmpty()) {

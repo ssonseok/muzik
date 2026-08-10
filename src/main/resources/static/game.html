@@ -52,9 +52,9 @@
     const urlParams = new URLSearchParams(window.location.search);
     const roomId = parseInt(urlParams.get('roomId'));
 
-    // 💡 다중 탭 테스트를 위해 sessionStorage 사용
+    // 💡 다중 탭 테스트를 위해 localStorage 사용
     const userId = parseInt(localStorage.getItem('userId'));
-        const nickname = localStorage.getItem('nickname');
+    const nickname = localStorage.getItem('nickname');
 
     if (!roomId || !userId) {
         alert("잘못된 접근입니다. 다시 로그인해 주세요.");
@@ -99,7 +99,7 @@
                 handleIncomingMessage(msgData);
             });
 
-            // 💡 백엔드 @MessageMapping("/game/chat") 및 ChatMessageDto 규격에 맞춰 ENTER 메시지 전송
+            // 백엔드 @MessageMapping("/game/chat") 및 ChatMessageDto 규격에 맞춰 ENTER 메시지 전송
             stompClient.send('/app/game/chat', {}, JSON.stringify({
                 type: 'ENTER',
                 roomId: roomId,
@@ -117,20 +117,28 @@
     function handleIncomingMessage(data) {
         const chatBox = document.getElementById('chatBox');
 
-        // A. 채팅 및 시스템 메시지 출력 (ChatMessageDto: message, sender)
+        // A. 채팅 및 시스템 메시지 출력
         if (data.message) {
             const p = document.createElement('p');
             p.style.margin = "3px 0";
 
             if (data.type === 'TALK') {
                 p.innerHTML = `<b>[${data.sender || '알림'}]</b>: ${data.message}`;
-            } else if (data.type === 'ANSWER_CORRECT') {
+            } else if (data.type === 'ANSWER_AND_NEXT') {
                 p.style.color = "green";
                 p.style.fontWeight = "bold";
-                p.innerHTML = `🎉 [정답] ${data.message}`;
-            } else if (data.type === 'SKIP_VOTE' || data.type === 'SKIP') {
+                p.innerText = data.message;
+            } else if (data.type === 'SKIP_AND_NEXT') {
                 p.style.color = "orange";
-                p.innerHTML = `⏭️ ${data.message}`;
+                p.innerText = data.message;
+            } else if (data.type === 'START') {
+                p.style.color = "blue";
+                p.style.fontWeight = "bold";
+                p.innerText = data.message;
+            } else if (data.type === 'GAME_END') {
+                p.style.color = "purple";
+                p.style.fontWeight = "bold";
+                p.innerText = data.message;
             } else if (data.type === 'ENTER' || data.type === 'LEAVE') {
                 p.style.color = "gray";
                 p.innerHTML = `<i>${data.message}</i>`;
@@ -142,19 +150,19 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // B. 유튜브 음악 재생 (백엔드에서 youtubeId를 내려주는 경우)
+        // B. 유튜브 음악 자동 재생 로직 (백엔드 GamePlayServiceImpl의 youtubeId 기반)
         if (data.youtubeId && isPlayerReady) {
-            console.log("유튜브 재생 시작 - ID:", data.youtubeId);
+            console.log("유튜브 재생 시작 - Video ID:", data.youtubeId);
+
             ytPlayer.loadVideoById(data.youtubeId);
             ytPlayer.playVideo();
 
-            if (data.round) {
-                document.getElementById('gameStatusText').innerText = `🎵 ${data.round}라운드 진행 중!`;
-            }
+            const currentRound = data.round || 1;
+            document.getElementById('gameStatusText').innerText = `🎵 ${currentRound}라운드 진행 중!`;
         }
 
-        // C. 게임 종료
-        if (data.type === 'GAME_OVER') {
+        // C. 게임 종료 처리 (GAME_END)
+        if (data.type === 'GAME_END') {
             if (ytPlayer && isPlayerReady) ytPlayer.stopVideo();
             document.getElementById('gameStatusText').innerText = "🏆 게임이 종료되었습니다!";
         }
@@ -208,15 +216,18 @@
 
     // D. 방 나가기
     async function leaveRoom() {
-        try {
-            await fetch(`${API_BASE}/${roomId}/leave?userId=${userId}`, { method: 'POST' });
-        } catch (e) {
-            console.error(e);
-        } finally {
-            if (stompClient) stompClient.disconnect();
-            window.location.href = 'lobby.html';
-        }
+    try {
+        // 백엔드의 @PostMapping("/{roomId}/leave") 호출
+        await fetch(`${API_BASE}/${roomId}/leave?userId=${userId}`, {
+            method: 'POST'
+        });
+    } catch (e) {
+        console.error("퇴장 요청 에러:", e);
+    } finally {
+        if (stompClient) stompClient.disconnect();
+        window.location.href = 'lobby.html'; // 로비로 이동
     }
+}
 </script>
 </body>
 </html>
