@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import son.suck.muzik.dto.LoginRequestDto;
 import son.suck.muzik.dto.SignupRequestDto;
+import son.suck.muzik.dto.UserStatsResponseDto;
 import son.suck.muzik.service.UserService;
 
 @RestController
@@ -33,5 +34,10 @@ public class UserController {
     public ResponseEntity<Long> login(@Valid @RequestBody LoginRequestDto request) {
         Long userId = userService.login(request);
         return ResponseEntity.ok(userId);
+    }
+
+    @GetMapping("/{userId}/stats")
+    public ResponseEntity<UserStatsResponseDto> getUserStats(@PathVariable("userId") Long userId) {
+        return ResponseEntity.ok(userService.getUserStats(userId));
     }
 }

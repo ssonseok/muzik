@@ -8,6 +8,9 @@ import son.suck.muzik.domain.UserStatus;
 import son.suck.muzik.domain.Users;
 import son.suck.muzik.dto.LoginRequestDto;
 import son.suck.muzik.dto.SignupRequestDto;
+import son.suck.muzik.dto.UserStatsResponseDto;
+import son.suck.muzik.repository.GameHistoryResultRepository;
+import son.suck.muzik.repository.GameParticipantRepository;
 import son.suck.muzik.repository.UsersRepository;
 
 @Service
@@ -16,6 +19,7 @@ import son.suck.muzik.repository.UsersRepository;
 public class UserServiceImpl implements UserService {
 
     private final UsersRepository usersRepository;
+    private final GameHistoryResultRepository gameHistoryResultRepository;
 
     @Transactional
     @Override
@@ -55,5 +59,14 @@ public class UserServiceImpl implements UserService {
         user.getUserStatus().updateStatus(UserOnlineStatus.ONLINE);
 
         return user.getId();
+    }
+
+    @Override
+    public UserStatsResponseDto getUserStats(Long userId) {
+        long totalGames = gameHistoryResultRepository.countByUserId(userId);
+        long winCount = gameHistoryResultRepository.countByUserIdAndRanking(userId, 1);
+        Integer maxScore = gameHistoryResultRepository.findMaxScoreByUserId(userId);
+
+        return UserStatsResponseDto.of(totalGames, winCount, maxScore);
     }
 }

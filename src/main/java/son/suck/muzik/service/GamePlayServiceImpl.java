@@ -5,15 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import son.suck.muzik.domain.*;
 import son.suck.muzik.dto.ChatMessageDto;
-import son.suck.muzik.domain.GameRoom;
-import son.suck.muzik.domain.GameParticipant;
-import son.suck.muzik.domain.Users;
-import son.suck.muzik.domain.Music;
-import son.suck.muzik.repository.GameRoomRepository;
-import son.suck.muzik.repository.GameParticipantRepository;
-import son.suck.muzik.repository.UsersRepository;
-import son.suck.muzik.repository.MusicRepository;
+import son.suck.muzik.dto.GameResultSaveDto;
+import son.suck.muzik.repository.*;
 import son.suck.muzik.session.GameSession;
 
 import java.util.List;
@@ -30,6 +25,7 @@ public class GamePlayServiceImpl implements GamePlayService {
     private final GameParticipantRepository gameParticipantRepository;
     private final UsersRepository usersRepository;
     private final MusicRepository musicRepository;
+    private final GameHistoryRepository gameHistoryRepository;
 
     private final Map<Long, GameSession> activeGames = new ConcurrentHashMap<>();
 
@@ -142,6 +138,7 @@ public class GamePlayServiceImpl implements GamePlayService {
             }
             //모든 문제를 맞춰서 게임이 완전히 끝난 경우
             else {
+                finishGame(gameRoom.getId());
                 gameRoom.updateStatus("WAITING");
                 activeGames.remove(gameRoom.getId()); // 메모리 세션 삭제로 메모리 누수 방지
 
@@ -218,6 +215,7 @@ public class GamePlayServiceImpl implements GamePlayService {
             message.setMessage("과반수 찬성으로 스킵되었습니다! 원곡: '" + skippedMusic.getTitle() + "' (" + skippedMusic.getArtist() + ")\n"
                     + "다음 라운드(" + (session.getCurrentRound() + 1) + "라운드) 시작!");
         } else {
+            finishGame(gameRoom.getId());
             // 마지막 곡에서 스킵된 경우 게임 종료 처리
             gameRoom.updateStatus("WAITING");
             activeGames.remove(gameRoom.getId()); // 메모리 세션 삭제
@@ -233,5 +231,53 @@ public class GamePlayServiceImpl implements GamePlayService {
         }
 
         return message;
+    }
+
+    @Transactional
+    public void saveGameHistory(Long roomId, List<GameResultSaveDto> resultsDto) {
+        // 방 정보 조회 (장르 추출)
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다. ID: " + roomId));
+
+        // 부모 GameHistory 엔티티 생성
+        GameHistory gameHistory = GameHistory.builder()
+                .playGenre(gameRoom.getGenre())
+                .build();
+
+        resultsDto.sort((a, b) -> Integer.compare(b.getFinalScore(), a.getFinalScore()));
+
+        //순위 계산 및 자식 GameHistoryResult 추가
+        int rank = 1;
+        for (GameResultSaveDto dto : resultsDto) {
+            Users user = usersRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. ID: " + dto.getUserId()));
+
+            GameHistoryResult result = GameHistoryResult.builder()
+                    .user(user)
+                    .gameHistory(gameHistory)
+                    .finalScore(dto.getFinalScore())
+                    .ranking(rank++)
+                    .build();
+
+            // 양방향 매핑 리스트에 추가 (CascadeType.ALL에 의해 함께 저장됨)
+            gameHistory.getResults().add(result);
+        }
+        gameHistoryRepository.save(gameHistory);
+    }
+
+    // 기존 게임 완료/종료 처리 메서드
+    @Transactional
+    public void finishGame(Long roomId) {
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
+
+        List<GameResultSaveDto> resultsDto = gameRoom.getParticipants().stream()
+                .map(p -> new GameResultSaveDto(p.getUser().getId(), p.getCurrentScore()))
+                .collect(Collectors.toList());
+
+        // 방금 추가한 저장 메서드 호출
+        saveGameHistory(roomId, resultsDto);
+
+        gameRoom.updateStatus("WAITING");
     }
 }
