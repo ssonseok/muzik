@@ -17,4 +17,7 @@ public interface UserFriendRepository extends JpaRepository<UserFriend, Long> {
             "WHERE uf.currentUser.id = :currentUserId AND uf.status = :status")
     List<UserFriend> findMyFriendsWithStatus(@Param("currentUserId") Long currentUserId,
                                              @Param("status") String status);
+
+    // 이미 요청을 보냈거나 친구 상태인지 확인
+    boolean existsByCurrentUserIdAndFriendUserId(Long currentUserId, Long friendUserId);
 }
