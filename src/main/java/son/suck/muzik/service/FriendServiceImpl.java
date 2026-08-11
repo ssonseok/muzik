@@ -5,8 +5,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import son.suck.muzik.domain.UserFriend;
 import son.suck.muzik.domain.Users;
+import son.suck.muzik.dto.FriendListResponseDto;
 import son.suck.muzik.repository.UserFriendRepository;
 import son.suck.muzik.repository.UsersRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,5 +64,14 @@ public class FriendServiceImpl implements FriendService{
         }
 
         userFriend.acceptFriend();
+    }
+
+    @Override
+    public List<FriendListResponseDto> getMyFriendList(Long currentUserId) {
+        List<UserFriend> acceptedFriends = userFriendRepository.findByCurrentUserIdAndStatus(currentUserId, "ACCEPTED");
+
+        return acceptedFriends.stream()
+                .map(uf -> new FriendListResponseDto(uf.getId(), uf.getFriendUser()))
+                .collect(Collectors.toList());
     }
 }

@@ -23,4 +23,6 @@ public interface UserFriendRepository extends JpaRepository<UserFriend, Long> {
     boolean existsByCurrentUserIdAndFriendUserId(Long currentUserId, Long friendUserId);
     //요청 확인
     Optional<UserFriend> findByIdAndFriendUserId(Long id, Long friendUserId);
+    //친구목록
+    List<UserFriend> findByCurrentUserIdAndStatus(Long currentUserId, String status);
 }

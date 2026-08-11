@@ -3,8 +3,11 @@ package son.suck.muzik.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import son.suck.muzik.dto.FriendListResponseDto;
 import son.suck.muzik.dto.FriendRequestDto;
 import son.suck.muzik.service.FriendService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/friends")
@@ -30,5 +33,14 @@ public class FriendController {
 
         friendService.acceptFriendRequest(currentUserId, friendshipId);
         return ResponseEntity.ok("친구 요청을 수락했습니다.");
+    }
+
+    //친구목록
+    @GetMapping
+    public ResponseEntity<List<FriendListResponseDto>> getMyFriendList(
+            @RequestParam("userId") Long currentUserId) {
+
+        List<FriendListResponseDto> friendList = friendService.getMyFriendList(currentUserId);
+        return ResponseEntity.ok(friendList);
     }
 }
