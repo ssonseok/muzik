@@ -12,6 +12,7 @@ import son.suck.muzik.service.FriendService;
 public class FriendController {
     private final FriendService friendService;
 
+    //친추 요청
     @PostMapping("/request")
     public ResponseEntity<String> sendFriendRequest(
             @RequestParam("userId") Long currentUserId,
@@ -19,5 +20,15 @@ public class FriendController {
 
         friendService.sendFriendRequest(currentUserId, requestDto.getTargetNickname());
         return ResponseEntity.ok("친구 요청을 성공적으로 보냈습니다.");
+    }
+
+    //친추 수락
+    @PatchMapping("/accept/{friendshipId}")
+    public ResponseEntity<String> acceptFriendRequest(
+            @RequestParam("userId") Long currentUserId, // 수락하는 사람(나)의 ID
+            @PathVariable("friendshipId") Long friendshipId) {
+
+        friendService.acceptFriendRequest(currentUserId, friendshipId);
+        return ResponseEntity.ok("친구 요청을 수락했습니다.");
     }
 }

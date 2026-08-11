@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import son.suck.muzik.domain.UserFriend;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserFriendRepository extends JpaRepository<UserFriend, Long> {
 
@@ -20,4 +21,6 @@ public interface UserFriendRepository extends JpaRepository<UserFriend, Long> {
 
     // 이미 요청을 보냈거나 친구 상태인지 확인
     boolean existsByCurrentUserIdAndFriendUserId(Long currentUserId, Long friendUserId);
+    //요청 확인
+    Optional<UserFriend> findByIdAndFriendUserId(Long id, Long friendUserId);
 }

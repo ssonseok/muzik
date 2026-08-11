@@ -46,4 +46,19 @@ public class FriendServiceImpl implements FriendService{
 
         userFriendRepository.save(userFriend);
     }
+
+    @Override
+    @Transactional
+    public void acceptFriendRequest(Long currentUserId, Long friendshipId) {
+        // 해당 친구 요청 건이 존재하는지, 수락하는 사람(friendUser)이 본인이 맞는지 검증하며 조회
+        UserFriend userFriend = userFriendRepository.findByIdAndFriendUserId(friendshipId, currentUserId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 본인에게 온 친구 요청이 아닙니다. ID: " + friendshipId));
+
+        //이미 수락된 요청인지 검증
+        if ("ACCEPTED".equals(userFriend.getStatus())) {
+            throw new IllegalArgumentException("이미 수락 완료된 친구 요청입니다.");
+        }
+
+        userFriend.acceptFriend();
+    }
 }
