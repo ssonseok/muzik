@@ -14,15 +14,14 @@ public interface UserFriendRepository extends JpaRepository<UserFriend, Long> {
     // N+1 문제를 막기 위해 친구의 유저 정보(friendUser)와 상태(userStatus)까지 한방에 조인해서 가져옵니다.
     @Query("SELECT uf FROM UserFriend uf " +
             "JOIN FETCH uf.friendUser f " +
-            "JOIN FETCH f.userStatus " +
+            "LEFT JOIN FETCH f.userStatus " +
             "WHERE uf.currentUser.id = :currentUserId AND uf.status = :status")
-    List<UserFriend> findMyFriendsWithStatus(@Param("currentUserId") Long currentUserId,
-                                             @Param("status") String status);
+    List<UserFriend> findByCurrentUserIdAndStatus(@Param("currentUserId") Long currentUserId, @Param("status") String status);
 
     // 이미 요청을 보냈거나 친구 상태인지 확인
     boolean existsByCurrentUserIdAndFriendUserId(Long currentUserId, Long friendUserId);
     //요청 확인
     Optional<UserFriend> findByIdAndFriendUserId(Long id, Long friendUserId);
     //친구목록
-    List<UserFriend> findByCurrentUserIdAndStatus(Long currentUserId, String status);
+    //List<UserFriend> findByCurrentUserIdAndStatus(Long currentUserId, String status);
 }

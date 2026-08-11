@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import son.suck.muzik.domain.UserFriend;
+import son.suck.muzik.domain.UserOnlineStatus;
+import son.suck.muzik.domain.UserStatus;
 import son.suck.muzik.domain.Users;
 import son.suck.muzik.dto.FriendListResponseDto;
 import son.suck.muzik.repository.UserFriendRepository;
@@ -51,19 +53,34 @@ public class FriendServiceImpl implements FriendService{
         userFriendRepository.save(userFriend);
     }
 
-    @Override
-    @Transactional
-    public void acceptFriendRequest(Long currentUserId, Long friendshipId) {
-        // 해당 친구 요청 건이 존재하는지, 수락하는 사람(friendUser)이 본인이 맞는지 검증하며 조회
-        UserFriend userFriend = userFriendRepository.findByIdAndFriendUserId(friendshipId, currentUserId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 본인에게 온 친구 요청이 아닙니다. ID: " + friendshipId));
 
-        //이미 수락된 요청인지 검증
-        if ("ACCEPTED".equals(userFriend.getStatus())) {
-            throw new IllegalArgumentException("이미 수락 완료된 친구 요청입니다.");
+    @Transactional
+    @Override
+    public void acceptFriendRequest(Long friendshipId, Long currentUserId) {
+        UserFriend request = userFriendRepository.findById(friendshipId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 친구 요청입니다."));
+
+        if (!request.getFriendUser().getId().equals(currentUserId)) {
+            throw new IllegalArgumentException("수락 권한이 없습니다.");
         }
 
-        userFriend.acceptFriend();
+        request.updateStatus("ACCEPTED");
+
+        // 반대 방향(요청을 받은 사람) 관계도 새로 생성하여 저장
+        boolean reverseExists = userFriendRepository.existsByCurrentUserIdAndFriendUserId(
+                request.getFriendUser().getId(),
+                request.getCurrentUser().getId()
+        );
+
+        if (!reverseExists) {
+            UserFriend reverseFriend = UserFriend.builder()
+                    .currentUser(request.getFriendUser())
+                    .friendUser(request.getCurrentUser())
+                    .status("ACCEPTED")
+                    .build();
+
+            userFriendRepository.save(reverseFriend);
+        }
     }
 
     @Override
@@ -71,7 +88,16 @@ public class FriendServiceImpl implements FriendService{
         List<UserFriend> acceptedFriends = userFriendRepository.findByCurrentUserIdAndStatus(currentUserId, "ACCEPTED");
 
         return acceptedFriends.stream()
-                .map(uf -> new FriendListResponseDto(uf.getId(), uf.getFriendUser()))
+                .map(uf -> {
+                    Users friendUser = uf.getFriendUser();
+                    UserStatus userStatus = friendUser.getUserStatus();
+
+                    UserOnlineStatus status = (userStatus != null)
+                            ? userStatus.getStatus()
+                            : UserOnlineStatus.OFFLINE;
+
+                    return new FriendListResponseDto(uf.getId(), friendUser, status);
+                })
                 .collect(Collectors.toList());
     }
 }

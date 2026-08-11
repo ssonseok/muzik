@@ -38,4 +38,8 @@ public class UserFriend {
     public void acceptFriend() {
         this.status = "ACCEPTED";
     }
+    //
+    public void updateStatus(String status) {
+        this.status = status;
+    }
 }
