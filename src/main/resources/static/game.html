@@ -28,6 +28,10 @@
 <div id="playerContainer" style="display: none;">
     <div id="youtubePlayer"></div>
 </div>
+<div id="volumeControl" style="margin-top: 10px;">
+    🔊 <input type="range" id="volumeSlider" min="0" max="100" value="50" oninput="changeVolume(this.value)">
+    <span id="volumeValue">50%</span>
+</div>
 
 <!-- 3. 실시간 채팅 / 정답 입력 & 스킵 영역 -->
 <fieldset style="margin-bottom: 15px;">
@@ -74,10 +78,22 @@
             height: '0',
             width: '0',
             events: {
-                'onReady': function() { isPlayerReady = true; }
+            'onReady': function() {
+                isPlayerReady = true;
+                const currentVol = document.getElementById('volumeSlider').value || 50;
+                ytPlayer.setVolume(currentVol);
             }
+        }
         });
     }
+    function changeVolume(volume) {
+        if (ytPlayer && typeof ytPlayer.setVolume === 'function') {
+            ytPlayer.setVolume(volume);
+            document.getElementById('volumeValue').innerText = `${volume}%`;
+        }
+    }
+
+
 
     // --- 2. 페이지 로드 시 웹소켓 연결 ---
     window.onload = function() {
@@ -155,6 +171,8 @@
             console.log("유튜브 재생 시작 - Video ID:", data.youtubeId);
 
             ytPlayer.loadVideoById(data.youtubeId);
+            const currentVol = document.getElementById('volumeSlider').value || 50;
+            ytPlayer.setVolume(currentVol);
             ytPlayer.playVideo();
 
             const currentRound = data.round || 1;
