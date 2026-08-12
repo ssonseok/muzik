@@ -8,6 +8,7 @@ import son.suck.muzik.domain.UserOnlineStatus;
 import son.suck.muzik.domain.UserStatus;
 import son.suck.muzik.domain.Users;
 import son.suck.muzik.dto.FriendListResponseDto;
+import son.suck.muzik.dto.FriendRequestResponseDto;
 import son.suck.muzik.repository.UserFriendRepository;
 import son.suck.muzik.repository.UsersRepository;
 
@@ -38,7 +39,9 @@ public class FriendServiceImpl implements FriendService{
         }
 
         // 이미 친구 요청을 보냈거나 친구 관계인지 검증
-        boolean alreadyExists = userFriendRepository.existsByCurrentUserIdAndFriendUserId(currentUser.getId(), friendUser.getId());
+        boolean alreadyExists = userFriendRepository.existsByCurrentUserIdAndFriendUserId(currentUser.getId(), friendUser.getId())
+                || userFriendRepository.existsByCurrentUserIdAndFriendUserId(friendUser.getId(), currentUser.getId());
+
         if (alreadyExists) {
             throw new IllegalArgumentException("이미 친구 요청을 보냈거나 친구 상태입니다.");
         }
@@ -53,10 +56,24 @@ public class FriendServiceImpl implements FriendService{
         userFriendRepository.save(userFriend);
     }
 
+    // 받은 친구 요청 목록
+    @Override
+    public List<FriendRequestResponseDto> getReceivedFriendRequests(Long currentUserId) {
+        List<UserFriend> receivedRequests = userFriendRepository.findByFriendUserIdAndStatus(currentUserId, "REQUESTED");
+
+        return receivedRequests.stream()
+                .map(uf -> new FriendRequestResponseDto(
+                        uf.getId(),
+                        uf.getCurrentUser().getId(),
+                        uf.getCurrentUser().getNickname()
+                ))
+                .collect(Collectors.toList());
+    }
+
 
     @Transactional
     @Override
-    public void acceptFriendRequest(Long friendshipId, Long currentUserId) {
+    public void acceptFriendRequest(Long currentUserId, Long friendshipId) {
         UserFriend request = userFriendRepository.findById(friendshipId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 친구 요청입니다."));
 

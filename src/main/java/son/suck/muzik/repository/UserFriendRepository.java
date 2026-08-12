@@ -24,4 +24,9 @@ public interface UserFriendRepository extends JpaRepository<UserFriend, Long> {
     Optional<UserFriend> findByIdAndFriendUserId(Long id, Long friendUserId);
     //친구목록
     //List<UserFriend> findByCurrentUserIdAndStatus(Long currentUserId, String status);
+    //나에게 들어온 요청 조회
+    @Query("SELECT uf FROM UserFriend uf " +
+            "JOIN FETCH uf.currentUser c " +
+            "WHERE uf.friendUser.id = :friendUserId AND uf.status = :status")
+    List<UserFriend> findByFriendUserIdAndStatus(@Param("friendUserId") Long friendUserId, @Param("status") String status);
 }

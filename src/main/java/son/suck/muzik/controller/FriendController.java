@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import son.suck.muzik.dto.FriendListResponseDto;
 import son.suck.muzik.dto.FriendRequestDto;
+import son.suck.muzik.dto.FriendRequestResponseDto;
 import son.suck.muzik.service.FriendService;
 
 import java.util.List;
@@ -23,6 +24,15 @@ public class FriendController {
 
         friendService.sendFriendRequest(currentUserId, requestDto.getTargetNickname());
         return ResponseEntity.ok("친구 요청을 성공적으로 보냈습니다.");
+    }
+
+    //받은 친구 요청 목록 조회
+    @GetMapping("/requests/received")
+    public ResponseEntity<List<FriendRequestResponseDto>> getReceivedFriendRequests(
+            @RequestParam("userId") Long currentUserId) {
+
+        List<FriendRequestResponseDto> requests = friendService.getReceivedFriendRequests(currentUserId);
+        return ResponseEntity.ok(requests);
     }
 
     //친추 수락
