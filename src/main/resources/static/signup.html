@@ -27,7 +27,7 @@
     <button type="button" onclick="location.href='login.html'">로그인 화면으로 돌아가기</button>
 </form>
 
-<div id="resultMessage" style="margin-top: 15px; color: red;"></div>
+<!--<div id="resultMessage" style="margin-top: 15px; color: red;"></div>-->
 
 <script>
     const BASE_URL = 'http://localhost:8080/api/users';
@@ -51,11 +51,11 @@
             const resultText = await response.text();
 
             if (response.ok) {
-                alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.');
-                // 가입 성공 시 로그인 페이지(login.html)로 이동
+                alert('회원가입 완료');
                 window.location.href = 'login.html';
             } else {
-                document.getElementById('resultMessage').innerText = "오류: " + resultText;
+                const errorText = await response.text();
+                alert(errorText || "회원가입에 실패했습니다.");
             }
         } catch (error) {
             console.error('Error:', error);

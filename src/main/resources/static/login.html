@@ -22,7 +22,7 @@
     <button type="button" onclick="location.href='signup.html'">회원가입 하러가기</button>
 </form>
 
-<div id="resultMessage" style="margin-top: 15px; color: red;"></div>
+<!--<div id="resultMessage" style="margin-top: 15px; color: red;"></div>-->
 
 <script>
     const BASE_URL = 'http://localhost:8080/api/users';
@@ -58,7 +58,7 @@
                 window.location.href = 'lobby.html';
             } else {
                 const errorText = await response.text();
-                document.getElementById('resultMessage').innerText = "로그인 실패: " + errorText;
+                alert(errorText || "아이디 또는 비밀번호가 올바르지 않습니다.");
             }
         } catch (error) {
             console.error('Error:', error);
