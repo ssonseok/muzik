@@ -45,11 +45,10 @@
             if (response.ok) {
                 const result = await response.json();
 
-                // 만약 방법 1처럼 백엔드에서 DTO(userId, nickname)로 넘겨준다면:
                 if (typeof result === 'object') {
                     localStorage.setItem('userId', result.userId);
                     localStorage.setItem('nickname', result.nickname);
-                } else { // 백엔드가 단순히 Long(userId)만 리턴하는 기존 방식이라면:
+                } else {
                     localStorage.setItem('userId', result);
                     localStorage.setItem('nickname', loginData.loginId); // 임시로 아이디를 닉네임으로 저장
                 }

@@ -22,8 +22,12 @@ public class UserController {
      */
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@Valid @RequestBody SignupRequestDto request) {
-        userService.signup(request);
-        return ResponseEntity.ok("회원가입이 완료되었습니다.");
+        try {
+            userService.signup(request);
+            return ResponseEntity.ok("회원가입이 완료되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     /**
@@ -31,9 +35,13 @@ public class UserController {
      * POST http://localhost:8080/api/users/login
      */
     @PostMapping("/login")
-    public ResponseEntity<Long> login(@Valid @RequestBody LoginRequestDto request) {
-        Long userId = userService.login(request);
-        return ResponseEntity.ok(userId);
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDto request) {
+        try {
+            Long userId = userService.login(request);
+            return ResponseEntity.ok(userId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/{userId}/stats")
