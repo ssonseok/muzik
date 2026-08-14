@@ -2,15 +2,14 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>게임방 - 뮤직 퀴즈</title>
-    <!-- 웹소켓 STOMP & YouTube IFrame API -->
+    <title>게임방</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
 
-<h2>🎵 뮤직 퀴즈 - 게임방 <span id="roomTitle"></span></h2>
+<h2>MUZIK - 게임방 <span id="roomTitle"></span></h2>
 <div>
     <span>접속자: <b id="myInfo"></b></span> |
     <button onclick="leaveRoom()" style="background-color: #ffcccc;">방 나가기</button>
@@ -18,13 +17,11 @@
 
 <hr>
 
-<!-- 1. 방장 전용 게임 시작 버튼 & 게임 정보 -->
 <div style="margin-bottom: 15px; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
     <button id="startBtn" onclick="sendStart()" style="font-weight: bold; padding: 5px 15px;">🎮 게임 시작</button>
     <span id="gameStatusText" style="margin-left: 10px; color: darkblue; font-weight: bold;">대기 중...</span>
 </div>
 
-<!-- 2. 유튜브 플레이어 (오디오 재생용) -->
 <div id="playerContainer" style="display: none;">
     <div id="youtubePlayer"></div>
 </div>
@@ -33,20 +30,17 @@
     <span id="volumeValue">50%</span>
 </div>
 
-<!-- 3. 실시간 채팅 / 정답 입력 & 스킵 영역 -->
 <fieldset style="margin-bottom: 15px;">
     <legend><b>실시간 채팅 및 정답 입력</b></legend>
 
-    <!-- 채팅 메시지 창 -->
     <div id="chatBox" style="width: 100%; height: 250px; border: 1px solid #ccc; overflow-y: scroll; padding: 5px; background-color: #fafafa; box-sizing: border-box;">
         <p style="color: gray;">[알림] 게임방에 입장하셨습니다. 채팅으로 정답을 맞혀보세요!</p>
     </div>
 
-    <!-- 입력 폼 & 스킵 버튼 -->
     <form id="chatForm" style="margin-top: 10px; display: flex; gap: 5px;">
         <input type="text" id="chatInput" placeholder="정답 또는 채팅 메시지 입력..." style="flex: 1;" autocomplete="off" required>
         <button type="submit">전송</button>
-        <button type="button" onclick="sendSkip()" style="background-color: #ffe680;">⏭️ 과반수 스킵</button>
+        <button type="button" onclick="sendSkip()" style="background-color: #ffe680;">스킵</button>
     </form>
 </fieldset>
 

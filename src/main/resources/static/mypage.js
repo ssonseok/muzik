@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch(`/api/users/${userId}/stats`);
             if (response.ok) {
                 const data = await response.json();
-                document.getElementById('nickname').innerText = data.nickname;
+//                document.getElementById('nickname').innerText = data.nickname;
                 document.getElementById('totalGames').innerText = data.totalGames;
                 document.getElementById('winCount').innerText = data.winCount;
                 document.getElementById('winRate').innerText = data.winRate;
