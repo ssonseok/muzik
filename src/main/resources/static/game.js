@@ -3,7 +3,7 @@
     const roomId = parseInt(urlParams.get('roomId'));
 
     // 💡 다중 탭 테스트를 위해 localStorage 사용
-    const userId = parseInt(localStorage.getItem('userId'));
+    const userId = parseInt(localStorage.getItem('userId'));1
     const nickname = localStorage.getItem('nickname');
 
     if (!roomId || !userId) {

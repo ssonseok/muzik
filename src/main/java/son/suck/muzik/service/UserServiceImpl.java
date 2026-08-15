@@ -7,6 +7,7 @@ import son.suck.muzik.domain.UserOnlineStatus;
 import son.suck.muzik.domain.UserStatus;
 import son.suck.muzik.domain.Users;
 import son.suck.muzik.dto.LoginRequestDto;
+import son.suck.muzik.dto.LoginResponseDto;
 import son.suck.muzik.dto.SignupRequestDto;
 import son.suck.muzik.dto.UserStatsResponseDto;
 import son.suck.muzik.repository.GameHistoryResultRepository;
@@ -48,7 +49,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public Long login(LoginRequestDto request) {
+    public LoginResponseDto login(LoginRequestDto request) {
         Users user = usersRepository.findByLoginId(request.getLoginId())
                 .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다."));
 
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
         user.getUserStatus().updateStatus(UserOnlineStatus.ONLINE);
 
-        return user.getId();
+        return new LoginResponseDto(user.getId(), user.getNickname());
     }
 
     @Override
