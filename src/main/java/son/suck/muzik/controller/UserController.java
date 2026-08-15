@@ -38,7 +38,7 @@ public class UserController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDto request) {
         try {
             Long userId = userService.login(request);
-            return ResponseEntity.ok(userId);
+            return ResponseEntity.ok(userId); ///수정필요 8.15
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
