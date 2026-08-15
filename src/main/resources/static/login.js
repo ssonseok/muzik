@@ -20,8 +20,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             const result = await response.json();
 
             // localStorage로 바꿔도댐 어차피 jwt할거임
-            sessionStorage.setItem('userId', result.userId);
-            sessionStorage.setItem('nickname', result.nickname);
+            localStorage.setItem('userId', result.userId);
+            localStorage.setItem('nickname', result.nickname);
 
             alert(`로그인 성공! ${result.nickname}님 환영합니당~.`);
             window.location.href = 'lobby.html';
