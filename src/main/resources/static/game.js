@@ -48,7 +48,7 @@
 
     // --- 3. 게임방 웹소켓 연결 (/topic/rooms/{roomId}) ---
     function connectGameSocket() {
-        const socket = new SockJS('${SERVER_URL}/ws');
+        const socket = new SockJS(`${SERVER_URL}/ws`);
         stompClient = Stomp.over(socket);
         stompClient.debug = null;
 
