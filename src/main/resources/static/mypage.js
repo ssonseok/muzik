@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = await fetch(`/api/users/${userId}/stats`);
+            const response = await fetch(`${API_BASE}/users/${userId}/stats`);
             if (response.ok) {
                 const data = await response.json();
 //                document.getElementById('nickname').innerText = data.nickname;

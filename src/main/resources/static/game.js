@@ -1,5 +1,4 @@
-const API_BASE = 'http://localhost:8080/api/rooms';
-
+//    const SERVER_URL = 'http://localhost:8080';
     const urlParams = new URLSearchParams(window.location.search);
     const roomId = parseInt(urlParams.get('roomId'));
 
@@ -49,7 +48,7 @@ const API_BASE = 'http://localhost:8080/api/rooms';
 
     // --- 3. 게임방 웹소켓 연결 (/topic/rooms/{roomId}) ---
     function connectGameSocket() {
-        const socket = new SockJS('http://localhost:8080/ws');
+        const socket = new SockJS('${SERVER_URL}/ws');
         stompClient = Stomp.over(socket);
         stompClient.debug = null;
 

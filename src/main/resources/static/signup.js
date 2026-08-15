@@ -1,5 +1,5 @@
-const BASE_URL = 'http://localhost:8080/api/users';
-
+//const BASE_URL = 'http://localhost:8080/api/users';
+const BASE_URL = `${API_BASE}/users`;
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 

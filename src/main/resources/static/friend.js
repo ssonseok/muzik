@@ -1,5 +1,6 @@
 
-    const SERVER_URL = 'http://localhost:8080';
+//    const SERVER_URL = 'http://localhost:8080';
+
     const userId = localStorage.getItem('userId');
     const nickname = localStorage.getItem('nickname');
 
