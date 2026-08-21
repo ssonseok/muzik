@@ -1,7 +1,7 @@
 :root {
     --bg-color: #1a191d;
-    --card-bg: rgba(161, 158, 172, 0.03);
-    --card-border: rgba(161, 158, 172, 0.12);
+    --card-bg: rgba(161, 158, 172, 0.04);
+    --card-border: rgba(161, 158, 172, 0.15);
 
     --text-primary: #e0e0e6;
     --text-secondary: #a19eac;
@@ -41,13 +41,13 @@ body {
     position: relative;
     z-index: 2;
     text-align: center;
-    padding: 40px 30px;
-    max-width: 420px;
+    padding: 35px 25px;
+    max-width: 440px;
     width: 90%;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 16px;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
@@ -61,7 +61,7 @@ body {
 }
 
 .brand-title {
-    font-size: 2.8rem;
+    font-size: 2.6rem;
     font-weight: 300;
     letter-spacing: 6px;
     color: var(--text-primary);
@@ -70,24 +70,24 @@ body {
 }
 
 .phrase {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 300;
     color: var(--text-secondary);
     line-height: 1.6;
-    margin-bottom: 35px;
+    margin-bottom: 30px;
     word-break: keep-all;
 }
 
 .button-group {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
 .btn {
     display: block;
     width: 100%;
-    padding: 14px 0;
+    padding: 13px 0;
     border-radius: 8px;
     font-size: 0.95rem;
     letter-spacing: 1px;
@@ -122,15 +122,109 @@ body {
     background-color: rgba(161, 158, 172, 0.05);
 }
 
+/* 게스트 메뉴 전용 스타일 */
+.guest-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.guest-card {
+    background: rgba(161, 158, 172, 0.05);
+    border: 1px solid rgba(161, 158, 172, 0.2);
+    border-radius: 12px;
+    padding: 16px 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.guest-card:hover {
+    background: rgba(199, 125, 255, 0.15);
+    border-color: var(--btn-main-bg);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px var(--glow-color);
+}
+
+.guest-card .icon { font-size: 1.8rem; margin-bottom: 6px; }
+.guest-card h3 { color: var(--text-primary); font-size: 0.9rem; font-weight: 500; }
+.guest-card p { font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px; }
+
+/* 사과 게임 전용 스타일 */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+}
+.game-stat { font-size: 0.85rem; color: var(--text-primary); }
+.game-stat span { color: var(--accent-gold); font-weight: bold; }
+
+.apple-board {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+    user-select: none;
+    touch-action: none;
+    position: relative;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.apple-cell {
+    aspect-ratio: 1;
+    background: rgba(199, 125, 255, 0.1);
+    border: 1px solid rgba(199, 125, 255, 0.2);
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.apple-cell.selected {
+    background: var(--btn-main-bg) !important;
+    color: var(--btn-main-text);
+    transform: scale(0.92);
+}
+
+.apple-cell.removed {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.nav-back-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.nav-back-btn:hover { color: var(--text-primary); }
+
 .music-player {
-    margin-top: 35px;
-    padding-top: 20px;
+    margin-top: 25px;
+    padding-top: 15px;
     border-top: 1px solid rgba(161, 158, 172, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
@@ -139,9 +233,9 @@ body {
     border: none;
     color: var(--accent-gold);
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     outline: none;
-    padding: 4px 8px;
+    padding: 3px 6px;
     border-radius: 4px;
     border: 1px solid rgba(255, 224, 102, 0.3);
     transition: all 0.2s;
