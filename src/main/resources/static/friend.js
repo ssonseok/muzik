@@ -1,12 +1,9 @@
-
-//    const SERVER_URL = 'http://localhost:8080';
-
     const userId = localStorage.getItem('userId');
     const nickname = localStorage.getItem('nickname');
 
     if (!userId) {
         alert("로그인이 필요합니다.");
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     } else {
         document.getElementById('myInfo').innerText = `${nickname} (ID: ${userId})`;
     }
@@ -16,7 +13,6 @@
         fetchFriendList();
     };
 
-    // 1. 친구 요청 보내기
     function sendFriendRequest() {
         const targetNickname = document.getElementById('targetNickname').value.trim();
         if (!targetNickname) {
@@ -38,7 +34,6 @@
         .catch(error => alert(error.message));
     }
 
-    // 2. 받은 친구 요청 목록 조회
     function fetchReceivedRequests() {
         fetch(`${SERVER_URL}/api/friends/requests/received?userId=${userId}`)
             .then(response => {
@@ -72,7 +67,6 @@
             });
     }
 
-    // 3. 친구 요청 수락
     function acceptFriendRequest(friendshipId) {
         fetch(`${SERVER_URL}/api/friends/accept/${friendshipId}?userId=${userId}`, {
             method: 'PATCH'
@@ -87,7 +81,6 @@
         .catch(error => alert(error.message));
     }
 
-    // 4. 내 친구 목록 및 접속 상태 조회
     function fetchFriendList() {
         fetch(`${SERVER_URL}/api/friends?userId=${userId}`)
             .then(response => {

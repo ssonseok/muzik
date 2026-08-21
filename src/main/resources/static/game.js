@@ -6,7 +6,7 @@ const urlParams = new URLSearchParams(window.location.search);
 
     if (!roomId || !userId) {
         alert("잘못된 접근입니다. 다시 로그인해 주세요.");
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     } else {
         document.getElementById('myInfo').innerText = nickname;
         document.getElementById('roomTitle').innerText = `#${roomId}`;

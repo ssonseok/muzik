@@ -5,7 +5,7 @@ const nickname = localStorage.getItem('nickname');
 
 if (!userId) {
     alert("로그인이 필요합니다.");
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
 } else {
     document.getElementById('myInfo').innerText = nickname;
 }
@@ -124,7 +124,7 @@ async function enterRoom(roomId) {
 // 로그아웃
 function logout() {
     localStorage.clear();
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
 }
 
 // 로비 웹소켓 연결
