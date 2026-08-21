@@ -53,28 +53,14 @@
         </div>
     </main>
 
-    <!-- 우측 친구 목록 사이드바 -->
     <aside class="sidebar">
-        <div class="section-title" style="justify-content: space-between;">
+        <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
             <span>👥 FRIENDS</span>
-            <button class="neon-btn neon-btn-dark" style="padding: 4px 8px; font-size: 12px;" onclick="location.href='friend.html'">관리</button>
+            <button class="neon-btn neon-btn-dark" style="padding: 4px 10px; font-size: 12px;" onclick="location.href='friend.html'">관리 ⚙️</button>
         </div>
 
         <div class="friend-list" id="friendList">
-            <!-- 나중에 friend.js 연동 시 렌더링될 영역 -->
-            <div class="friend-item">
-                <div>
-                    <span class="friend-status status-online"></span>
-                    <span>DJ_KIM</span>
-                </div>
-                <button class="neon-btn neon-btn-cyan" style="padding: 4px 8px; font-size: 11px;">초대</button>
-            </div>
-            <div class="friend-item">
-                <div>
-                    <span class="friend-status status-offline"></span>
-                    <span style="color: #666;">BEAT_MASTER</span>
-                </div>
-            </div>
+            <div style="color: #888; font-size: 13px; text-align: center; padding: 20px 0;">친구 목록 불러오는 중...</div>
         </div>
     </aside>
 

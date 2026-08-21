@@ -2,61 +2,67 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>친구 관리</title>
+    <title>AZIT MUZIK - 친구 관리</title>
+    <link rel="stylesheet" href="club.css">
 </head>
 <body>
 
-<h2>친구 관리 페이지</h2>
-<p>내 정보: <b id="myInfo">불러오는 중...</b></p>
-<button onclick="location.href='lobby.html'">로비로 돌아가기</button>
+<header class="club-header">
+    <div class="brand-logo">AZIT MUZIK <span style="color: #00F2FE; font-size: 18px;">| 친구 관리</span></div>
+    <button class="neon-btn neon-btn-dark" onclick="location.href='lobby.html'">🏠 로비로 돌아가기</button>
+</header>
 
-<hr>
+<div style="max-width: 1000px; margin: 30px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 20px;">
 
-<fieldset style="margin-bottom: 20px;">
-    <legend><b>친구 요청 보내기</b></legend>
-    <input type="text" id="targetNickname">
-    <button onclick="sendFriendRequest()">요청 보내기</button>
-</fieldset>
+    <div class="card-panel" style="padding: 20px;">
+        <div class="section-title" style="margin-bottom: 15px;">➕ 새로운 친구 요청 보내기</div>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="targetNickname" class="chat-input" placeholder="상대방 닉네임을 입력하세요..." style="flex: 1;">
+            <button class="neon-btn neon-btn-pink" onclick="sendFriendRequest()">요청 보내기</button>
+        </div>
+    </div>
 
-<fieldset style="margin-bottom: 20px;">
-    <legend><b>받은 친구 요청</b></legend>
-    <button onclick="fetchReceivedRequests()">새로고침</button>
-    <table border="1" style="width: 100%; margin-top: 10px; text-align: center;">
-        <thead>
-        <tr>
-            <th>요청 ID</th>
-            <th>보낸 사람 (닉네임)</th>
-            <th>수락</th>
-        </tr>
-        </thead>
-        <tbody id="receivedRequestTable">
-        <tr>
-            <td colspan="3">불러오는 중...</td>
-        </tr>
-        </tbody>
-    </table>
-</fieldset>
+    <div class="card-panel" style="padding: 20px;">
+        <div class="card-header">
+            <span class="card-title">받은 친구 요청 목록</span>
+            <button class="neon-btn neon-btn-dark" onclick="fetchReceivedRequests()" style="padding: 4px 10px; font-size: 12px;">🔄 새로고침</button>
+        </div>
+        <table class="club-table">
+            <thead>
+            <tr>
+                <th>요청 ID</th>
+                <th>보낸 사람 닉네임</th>
+                <th>수락 처리</th>
+            </tr>
+            </thead>
+            <tbody id="receivedRequestTable">
+            <tr><td colspan="3" style="color: #888;">불러오는 중...</td></tr>
+            </tbody>
+        </table>
+    </div>
 
-<fieldset>
-    <legend><b>내 친구 목록</b></legend>
-    <button onclick="fetchFriendList()">새로고침</button>
-    <table border="1" style="width: 100%; margin-top: 10px; text-align: center;">
-        <thead>
-        <tr>
-            <th>친구 ID</th>
-            <th>닉네임</th>
-            <th>접속 상태</th>
-        </tr>
-        </thead>
-        <tbody id="friendListTable">
-        <tr>
-            <td colspan="3">불러오는 중...</td>
-        </tr>
-        </tbody>
-    </table>
-</fieldset>
+    <div class="card-panel" style="padding: 20px;">
+        <div class="card-header">
+            <span class="card-title">등록된 친구 목록</span>
+            <button class="neon-btn neon-btn-dark" onclick="fetchFriendList()" style="padding: 4px 10px; font-size: 12px;">🔄 새로고침</button>
+        </div>
+        <table class="club-table">
+            <thead>
+            <tr>
+                <th>친구 ID</th>
+                <th>닉네임</th>
+                <th>현재 상태</th>
+            </tr>
+            </thead>
+            <tbody id="friendListTable">
+            <tr><td colspan="3" style="color: #888;">불러오는 중...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
 <script src="config.js"></script>
 <script src="friend.js"></script>
-
 </body>
 </html>

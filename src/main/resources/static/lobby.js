@@ -149,3 +149,68 @@ function connectLobbySocket() {
         console.error("로비 웹소켓 연결 에러:", error);
     });
 }
+
+window.onload = function() {
+    fetchRooms();
+    connectLobbySocket();
+    fetchLobbyFriendList(); // 친구 상태 불러오기
+};
+
+// 친구 목록 및 접속 상태 조회
+async function fetchLobbyFriendList() {
+    const friendListContainer = document.getElementById('friendList');
+    if (!friendListContainer) return;
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/friends?userId=${userId}`);
+        if (!response.ok) throw new Error('친구 목록 조회 실패');
+
+        const friends = await response.json();
+        renderLobbyFriends(friends);
+    } catch (error) {
+        console.error("로비 친구 목록 불러오기 실패:", error);
+        friendListContainer.innerHTML = '<div style="color: #FF007F; font-size: 12px; text-align: center; padding: 15px 0;">목록을 불러오지 못했습니다.</div>';
+    }
+}
+
+// 친구 상태 목록 화면
+function renderLobbyFriends(friends) {
+    const friendListContainer = document.getElementById('friendList');
+    friendListContainer.innerHTML = '';
+
+    if (!friends || friends.length === 0) {
+        friendListContainer.innerHTML = '<div style="color: #888; font-size: 13px; text-align: center; padding: 20px 0;">등록된 친구가 없습니다.<br>상단 [관리]에서 친구를 추가해보세요!</div>';
+        return;
+    }
+
+    friends.forEach(friend => {
+        const item = document.createElement('div');
+        item.className = 'friend-item';
+        item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);';
+
+        // 접속 상태별 표시 설정
+        let statusClass = 'status-offline';
+        let statusText = '오프라인';
+        let nameColor = 'color: #777;';
+
+        if (friend.status === 'ONLINE' || friend.status === 'LOBBY') {
+            statusClass = 'status-online';
+            statusText = '대기실';
+            nameColor = 'color: #FFF; font-weight: 600;';
+        } else if (friend.status === 'IN_GAME') {
+            statusClass = 'status-ingame';
+            statusText = '게임 중';
+            nameColor = 'color: #FF007F; font-weight: 600;';
+        }
+
+        item.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="friend-status ${statusClass}"></span>
+                <span style="${nameColor}">${friend.friendNickname}</span>
+            </div>
+            <span style="font-size: 11px; color: #AAA;">${statusText}</span>
+        `;
+
+        friendListContainer.appendChild(item);
+    });
+}
