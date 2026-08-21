@@ -1,5 +1,5 @@
 // ==========================================
-// 1. 유튜브 브금
+// 유튜브 브금
 // ==========================================
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
@@ -36,9 +36,8 @@ function onYouTubeIframeAPIReady() {
 }
 
 function onPlayerReady(event) {
-    player.setVolume(25); // 잔잔한 초기 볼륨 (25%)
+    player.setVolume(25);
 
-    // 화면 첫 클릭 시 BGM 재생 시작
     document.body.addEventListener('click', function startAudio() {
         if (!isPlaying && player) {
             player.playVideo();
@@ -88,10 +87,12 @@ function getMusicPlayerHTML() {
 // 2. SPA뷰 로직
 // ==========================================
 
-// 메인 홈 화면
 function showHome() {
     stopGameTimer();
     const content = document.getElementById('content-area');
+    if (!content) return;
+
+    // BGM 플레이어(getMusicPlayerHTML)는 꽂지 말고 pure 메인 메뉴만 렌더링
     content.innerHTML = `
         <div class="brand-sub">suckerson's</div>
         <h1 class="brand-title">AZIT</h1>
@@ -101,11 +102,10 @@ function showHome() {
         </p>
 
         <div class="button-group">
-            <button onclick="alert('로그인 서비스로 이동합니다.')" class="btn btn-login">로그인 서비스</button>
-            <button onclick="showGuestMenu()" class="btn btn-guest">게스트 서비스</button>
+            <!-- alert 대신 navigateTo('login') 호출 -->
+            <button type="button" onclick="navigateTo('login')" class="btn btn-login">로그인 서비스</button>
+            <button type="button" onclick="showGuestMenu()" class="btn btn-guest">게스트 서비스</button>
         </div>
-
-        ${getMusicPlayerHTML()}
     `;
 }
 
@@ -153,7 +153,7 @@ function showGuestMenu() {
 }
 
 // ==========================================
-// 3. 사과게임
+// 사과게임
 // ==========================================
 let score = 0;
 let timeLeft = 120;
@@ -289,7 +289,7 @@ function stopGameTimer() {
 }
 
 // ==========================================
-// Inst Lounge
+// BGM 설정
 // ==========================================
 
 const longInstPlaylist = {
@@ -308,7 +308,7 @@ function openInstLounge() {
 
         <div class="brand-sub">Inst Lounge</div>
         <h1 class="brand-title" style="font-size: 2rem; margin-bottom: 10px;">Inst Select</h1>
-        <p class="phrase" style="margin-bottom: 25px;">원하는 장르를 누르면 BGM이 즉시 전환됩니다.</p>
+        <p class="phrase" style="margin-bottom: 25px;">원하는 장르를 누르면 BGM이 전환됩니다.</p>
 
         <div class="inst-simple-group" style="display:flex; flex-direction:column; gap:10px; max-width:300px; margin:0 auto;">
             <button class="btn btn-guest" onclick="playLongTrack('ghibli')">Studio Ghibli</button>
@@ -326,14 +326,12 @@ function playLongTrack(genreKey) {
     const track = longInstPlaylist[genreKey];
     if (!track || !player) return;
 
-    // 선택한 유튜브 영상으로 교체 및 자동 재생
     player.loadVideoById(track.id);
     isPlaying = true;
 
     currentBgmTitle = `♪ BGM: ${track.title}`;
     updateBgmButtonText();
 
-    // 하단 재생 중인 음원 제목 업데이트
     const titleSpan = document.querySelector('.music-player > span');
      if (titleSpan) {
          titleSpan.innerText = currentBgmTitle;
@@ -477,7 +475,7 @@ function runRandomizerDraw() {
     }
 
     if (results.length === 0) {
-        alert('추첨할 항목을 최하 1개 이상 입력해 주세요!');
+        alert('추첨할 항목을 1개 이상 입력해 주세요');
         return;
     }
 
@@ -495,4 +493,37 @@ function runRandomizerDraw() {
             `).join('')}
         </div>
     `;
+}
+async function navigateTo(pageName) {
+    if (typeof stopGameTimer === 'function') stopGameTimer();
+
+    // 1. 메인 홈으로 가는 경우
+    if (pageName === 'home') {
+        showHome();
+        return;
+    }
+
+    // 2. 외부 HTML 조각(login, signup, gamemenu) 불러오기
+    const content = document.getElementById('content-area');
+    if (!content) return;
+
+    try {
+        const response = await fetch(`${pageName}.html`);
+        if (!response.ok) throw new Error('페이지 로드 실패');
+
+        const html = await response.text();
+        content.innerHTML = html; // content-area 내부만 교체 (BGM 플레이어는 안 건드림)
+
+        // 3. 화면 교체 후 각각의 JS 이벤트 초기화 함수 실행
+        if (pageName === 'login' && typeof initLoginPage === 'function') {
+            initLoginPage();
+        } else if (pageName === 'signup' && typeof initSignupPage === 'function') {
+            initSignupPage();
+        } else if (pageName === 'gamemenu' && typeof initGameMenuPage === 'function') {
+            initGameMenuPage();
+        }
+
+    } catch (error) {
+        console.error('화면 전환 중 오류 발생:', error);
+    }
 }
