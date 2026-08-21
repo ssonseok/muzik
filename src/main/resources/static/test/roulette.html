@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>다중 화살표 가변 룰렛</title>
+    <link rel="stylesheet" href="roulette.css">
+</head>
+<body>
+
+<div class="main-wrapper">
+    <!-- 좌측: 설정 패널 -->
+    <div class="control-panel">
+        <h2>⚙️ 룰렛 & 화살표 설정</h2>
+
+        <!-- 화살표 개수 선택 -->
+        <div class="arrow-setting">
+            <label for="arrowCount">🎯 당첨 화살표 개수:</label>
+            <select id="arrowCount" onchange="updateArrowCount()">
+                <option value="1">1개 (1명 뽑기)</option>
+            </select>
+        </div>
+
+        <hr>
+
+        <div id="itemList" class="item-list"></div>
+        <button type="button" class="btn add-btn" onclick="addItem()">+ 항목 추가하기</button>
+        <button type="button" class="btn apply-btn" onclick="updateWheel()">룰렛에 적용하기</button>
+    </div>
+
+    <!-- 우측: 룰렛 원판 영역 -->
+    <div class="wheel-section">
+        <div class="roulette-container">
+            <!-- 화살표들이 그려질 오버레이 레이어 -->
+            <div id="arrowOverlay" class="arrow-overlay"></div>
+            <canvas id="wheelCanvas" width="360" height="360"></canvas>
+            <button id="spinBtn" class="spin-btn" onclick="spinWheel()">SPIN!</button>
+        </div>
+
+        <!-- 결과 출력 및 다시하기 -->
+        <div class="result-box">
+            <h2 id="resultText">항목 및 화살표를 설정하고 SPIN을 누르세요!</h2>
+            <button id="resetBtn" class="btn reset-btn" onclick="resetSpin()" style="display: none;">🔄 다시 하기</button>
+        </div>
+    </div>
+</div>
+
+<script src="roulette.js"></script>
+</body>
+</html>

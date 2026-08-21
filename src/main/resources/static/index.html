@@ -1,15 +1,52 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="ko">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>MUZIK</title>-->
+<!--</head>-->
+<!--<body>-->
+
+<!--<script>-->
+<!--    location.href = "/login.html";-->
+<!--</script>-->
+
+
+<!--</body>-->
+<!--</html>-->
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MUZIK</title>
+    <!-- cinema, cafe있음 space 구현중 -->
+    <link rel="stylesheet" href="cinema.css">
 </head>
 <body>
+<div class="vignette"></div>
 
-<script>
-    location.href = "/login.html";
-</script>
+<div class="container">
+    <div class="brand-sub">Midnight Cinema</div>
+    <h1 class="brand-title">MUZIK</h1>
+    <p class="phrase">
+        조용한 새벽, 영화관 구석에서 흐르는 음악처럼.<br>
+        당신만의 사운드를 찾아보세요.
+    </p>
 
+    <div class="button-group">
+        <a href="/login.html" class="btn btn-login">로그인 서비스</a>
+        <a href="/guest.html" class="btn btn-guest">게스트 서비스</a>
+    </div>
 
+    <div class="music-player">
+        <span>♪ BGM: I'm Not The Only One (Piano)</span>
+        <button id="bgm-toggle" class="music-btn" onclick="toggleBGM()">음악 켜기</button>
+    </div>
+</div>
+
+<div id="youtube-player"></div>
+
+<script src="index.js"></script>
 </body>
 </html>

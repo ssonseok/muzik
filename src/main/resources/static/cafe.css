@@ -1,0 +1,157 @@
+/* =========================================================
+   [Night Cafe Theme]
+   밤의 창가 자리, 주황빛 스탠드 조명과 코지한 우드/앰버 감성
+   ========================================================= */
+:root {
+    --bg-color: #14110f;          /* 딥 흑갈색 (에스프레소 블랙) */
+    --card-bg: rgba(230, 150, 80, 0.04); /* 주황 조명 빛이 맴도는 따뜻한 반투명 카드 */
+    --card-border: rgba(212, 140, 70, 0.18); /* 따뜻한 앰버 테두리 */
+
+    --text-primary: #f5e6d3;      /* 부드러운 우유빛 크림 아이보리 */
+    --text-secondary: #c2a68c;    /* 로스팅 원두 느낌의 베이지 그레이 */
+    --accent-amber: #ffaa5a;      /* 은은하게 빛나는 앰버/주황 조명 빛 */
+
+    --btn-main-bg: #e08b47;       /* 주황빛 스탠드 색상 (Warm Amber Orange) */
+    --btn-main-hover: #f3a362;    /* 마우스 올렸을 때 더 밝아지는 온등 빛 */
+    --btn-main-text: #14110f;     /* 버튼 글자색 */
+
+    --glow-color: rgba(224, 139, 71, 0.25); /* 주황빛 조명 광원 효과 */
+    --vignette-glow: rgba(255, 150, 50, 0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-secondary);
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 밤 창가의 따뜻한 조명 반사 비네팅 효과 */
+.vignette {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at center, var(--vignette-glow) 0%, rgba(20, 17, 15, 0.96) 85%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 40px 30px;
+    max-width: 420px;
+    width: 90%;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+}
+
+.brand-sub {
+    font-size: 0.85rem;
+    letter-spacing: 4px;
+    color: var(--accent-amber);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.9;
+}
+
+.brand-title {
+    font-size: 2.8rem;
+    font-weight: 300;
+    letter-spacing: 6px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    text-shadow: 0 0 18px var(--glow-color);
+}
+
+.phrase {
+    font-size: 0.95rem;
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 35px;
+    word-break: keep-all;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 14px 0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+/* 주황 조명 메인 버튼 */
+.btn-login {
+    background-color: var(--btn-main-bg);
+    color: var(--btn-main-text);
+    font-weight: 600;
+    box-shadow: 0 4px 18px var(--glow-color);
+}
+
+.btn-login:hover {
+    background-color: var(--btn-main-hover);
+    box-shadow: 0 6px 22px rgba(243, 163, 98, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-guest {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border-color: rgba(194, 166, 140, 0.3);
+}
+
+.btn-guest:hover {
+    color: var(--text-primary);
+    border-color: rgba(245, 230, 211, 0.6);
+    background-color: rgba(194, 166, 140, 0.08);
+}
+
+.music-player {
+    margin-top: 35px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(194, 166, 140, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.music-btn {
+    background: none;
+    border: none;
+    color: var(--accent-amber);
+    cursor: pointer;
+    font-size: 0.85rem;
+    outline: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 170, 90, 0.35);
+    transition: all 0.2s;
+}
+
+.music-btn:hover { background: rgba(255, 170, 90, 0.12); }
+#youtube-player { display: none; }

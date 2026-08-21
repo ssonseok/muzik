@@ -1,0 +1,179 @@
+body {
+    background-color: #1e1e2f;
+    color: #ffffff;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.main-wrapper {
+    display: flex;
+    gap: 40px;
+    background: #2b2b3d;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    max-width: 920px;
+    width: 100%;
+}
+
+.control-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.control-panel h2 {
+    margin-top: 0;
+    color: #00ffcc;
+    font-size: 20px;
+}
+
+.arrow-setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1e1e2f;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.arrow-setting select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #2b2b3d;
+    color: #00ffcc;
+    border: 1px solid #00ffcc;
+    font-weight: bold;
+    outline: none;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #444;
+    margin: 5px 0;
+}
+
+.item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.item-row {
+    display: flex;
+    gap: 8px;
+}
+
+.item-row input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #1e1e2f;
+    color: #fff;
+    outline: none;
+}
+
+.wheel-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.roulette-container {
+    position: relative;
+    width: 360px;
+    height: 360px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 다중 화살표 레이어 */
+.arrow-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.pin {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    transform-origin: 0 0;
+}
+
+/* 화살표 역삼각형 스타일 */
+.pin::after {
+    content: '▼';
+    position: absolute;
+    top: -195px;
+    left: -12px;
+    font-size: 28px;
+    color: #ff4757;
+    text-shadow: 0 0 5px #000;
+}
+
+canvas {
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+    transition: transform 4s cubic-bezier(0.15, 0.9, 0.15, 1);
+}
+
+.spin-btn {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    background: #ffffff;
+    color: #1e1e2f;
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    z-index: 15;
+}
+
+.spin-btn:hover { background: #00ffcc; }
+
+.result-box {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#resultText {
+    font-size: 17px;
+    color: #ffb700;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.btn {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.add-btn { background: #3742fa; color: white; }
+.apply-btn { background: #2ed573; color: white; }
+.del-btn { background: #ff4757; color: white; padding: 0 12px; }
+.reset-btn { background: #ffa502; color: white; font-size: 15px; }
