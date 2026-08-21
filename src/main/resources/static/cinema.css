@@ -221,11 +221,44 @@ body {
     padding-top: 15px;
     border-top: 1px solid rgba(161, 158, 172, 0.1);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 10px;
     font-size: 0.75rem;
     color: var(--text-secondary);
+}
+.music-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 65px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    outline: none;
+    cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+    cursor: pointer;
 }
 
 .music-btn {
@@ -243,3 +276,83 @@ body {
 
 .music-btn:hover { background: rgba(255, 224, 102, 0.1); }
 #youtube-player { display: none; }
+
+/* ==========================================
+   🔑 로그인 / 회원가입 (Auth) 전용 스타일
+   ========================================== */
+
+.auth-container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 35px 25px;
+    max-width: 400px;
+    width: 90%;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.auth-form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    gap: 6px;
+}
+
+.input-group label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-left: 2px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.25s ease;
+}
+
+.input-group input:focus {
+    border-color: var(--btn-main-bg);
+    box-shadow: 0 0 10px var(--glow-color);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.input-group input::placeholder {
+    color: rgba(161, 158, 172, 0.5);
+    font-size: 0.85rem;
+}
+
+.button-group-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.nav-back-link {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nav-back-link:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}

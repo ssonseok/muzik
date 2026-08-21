@@ -1,138 +1,92 @@
-@charset "UTF-8";
-@import url('https://fonts.googleapis.com/css2?family=Orbit&display=swap');
+/* ==========================================
+   Auth (Login / Signup) Styles
+   ========================================== */
 
-/* 기본 배경 및 폰트 설정 (스타크래프트 특유의 어두운 우주/금속 느낌) */
-body {
-    background-color: #05080c;
-    background-image:
-        radial-gradient(circle at 50% 30%, #0d192b 0%, #030508 80%);
-    color: #00ffcc; /* 스타크래프트 터미널 초록/민트 폰트 색상 */
-    font-family: 'Orbit', 'Courier New', monospace;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-}
-
-/* 스타크래프트 패널 창 (각진 네온 금속 프레임) */
-.starcraft-panel {
-    background: rgba(10, 16, 26, 0.85);
-    border: 2px solid #00e5ff;
-    box-shadow:
-        0 0 15px rgba(0, 229, 255, 0.3),
-        inset 0 0 20px rgba(0, 229, 255, 0.1);
-    padding: 30px 40px;
-    width: 360px;
-    position: relative;
-}
-
-/* 패널 모서리 기계식 포인트 장식 */
-.starcraft-panel::before {
-    content: "SYSTEM :: ONLINE";
-    position: absolute;
-    top: -12px;
-    left: 15px;
-    background: #05080c;
-    padding: 0 8px;
-    font-size: 11px;
-    color: #ffb700; /* 테란 기계 경고 주황색 */
-    letter-spacing: 1.5px;
-}
-
-/* 제목 타이틀 */
-h2 {
-    color: #ffb700;
+/* 중앙 정렬 컨테이너 */
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 60px auto;
+    padding: 35px 25px;
+    background: rgba(20, 20, 20, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
     text-align: center;
-    margin-top: 10px;
-    margin-bottom: 25px;
-    font-size: 22px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 8px rgba(255, 183, 0, 0.6);
-    border-bottom: 1px dashed rgba(0, 229, 255, 0.3);
-    padding-bottom: 12px;
+    color: #ffffff;
 }
 
-/* 입력 폼 라벨 & 인풋 그룹 */
-.form-group {
-    margin-bottom: 18px;
+/* 폼 내부 구도 */
+.auth-form {
+    margin-top: 25px;
     display: flex;
     flex-direction: column;
+    gap: 18px;
 }
 
-label {
-    font-size: 13px;
-    color: #88bbdd;
-    margin-bottom: 6px;
-    letter-spacing: 1px;
-}
-
-/* 스타크래프트 스타일 터미널 입력창 */
-input[type="text"],
-input[type="password"] {
-    background-color: #020a14;
-    border: 1px solid #0088cc;
-    color: #00ffcc;
-    padding: 10px;
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.8);
-    transition: all 0.2s ease;
-}
-
-input[type="text"]:focus,
-input[type="password"]:focus {
-    border-color: #00e5ff;
-    box-shadow:
-        0 0 8px rgba(0, 229, 255, 0.5),
-        inset 0 0 5px rgba(0, 0, 0, 0.8);
-}
-
-/* 버튼 그룹 및 메카닉 스타일 버튼 */
-.button-group {
+/* 입력 필드 그룹 */
+.input-group {
     display: flex;
-    gap: 12px;
-    margin-top: 25px;
+    flex-direction: column;
+    text-align: left;
+    gap: 6px;
 }
 
-button {
-    flex: 1;
-    background: linear-gradient(180deg, #102538 0%, #08121c 100%);
-    border: 1px solid #00aaff;
-    color: #00ffcc;
+.input-group label {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-left: 2px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+}
+
+.input-group input:focus {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.input-group input::placeholder {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+/* 세로 배치 버튼 그룹 */
+.button-group-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.button-group-vertical .btn {
+    width: 100%;
     padding: 12px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 0 5px rgba(0, 170, 255, 0.2);
-    transition: all 0.15s ease;
+    font-size: 0.95rem;
+    font-weight: 600;
 }
 
-/* 버튼 호버 & 클릭 효과 (스타크래프트 UI 반응) */
-button:hover {
-    background: linear-gradient(180deg, #005588 0%, #002244 100%);
-    border-color: #00e5ff;
-    color: #ffffff;
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+/* 이전으로 링크 */
+.nav-back-link {
+    color: #888;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
-button:active {
-    transform: translateY(1px);
-    background: #001122;
-}
-
-/* 회원가입 버튼 (보조 버튼 느낌) */
-button[type="button"] {
-    border-color: #6688aa;
-    color: #99bbdd;
-}
-
-button[type="button"]:hover {
-    border-color: #ffb700;
-    color: #ffb700;
-    box-shadow: 0 0 12px rgba(255, 183, 0, 0.5);
+.nav-back-link:hover {
+    color: #fff;
+    text-decoration: underline;
 }

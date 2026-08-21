@@ -8,6 +8,15 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 var player;
 var isPlaying = false;
+var currentVolume = 25;
+var currentBgmTitle = "♪ BGM: I'm Not The Only One (Piano)";
+
+function setBGMVolume(val) {
+    currentVolume = parseInt(val, 10);
+    if (player && typeof player.setVolume === 'function') {
+        player.setVolume(currentVolume);
+    }
+}
 
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('youtube-player', {
@@ -60,6 +69,21 @@ function updateBgmButtonText() {
     }
 }
 
+function getMusicPlayerHTML() {
+    return `
+        <div class="music-player">
+            <span>${currentBgmTitle}</span>
+            <div class="music-controls">
+                <button id="bgm-toggle" class="music-btn" onclick="toggleBGM()">${isPlaying ? '음악 끄기' : '음악 켜기'}</button>
+                <div class="volume-control">
+                    <span>🔉</span>
+                    <input type="range" class="volume-slider" min="0" max="100" value="${currentVolume}" oninput="setBGMVolume(this.value)">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 // ==========================================
 // 2. SPA뷰 로직
 // ==========================================
@@ -81,10 +105,7 @@ function showHome() {
             <button onclick="showGuestMenu()" class="btn btn-guest">게스트 서비스</button>
         </div>
 
-        <div class="music-player">
-            <span>♪ BGM: I'm Not The Only One (Piano)</span>
-            <button id="bgm-toggle" class="music-btn" onclick="toggleBGM()">${isPlaying ? '음악 끄기' : '음악 켜기'}</button>
-        </div>
+        ${getMusicPlayerHTML()}
     `;
 }
 
@@ -127,10 +148,7 @@ function showGuestMenu() {
             <button onclick="showHome()" class="btn btn-guest" style="padding: 10px 0; font-size: 0.85rem;">← 메인으로 돌아가기</button>
         </div>
 
-        <div class="music-player">
-            <span>♪ BGM: I'm Not The Only One (Piano)</span>
-            <button id="bgm-toggle" class="music-btn" onclick="toggleBGM()">${isPlaying ? '음악 끄기' : '음악 켜기'}</button>
-        </div>
+        ${getMusicPlayerHTML()}
     `;
 }
 
@@ -160,10 +178,7 @@ function openAppleGame() {
 
         <div class="apple-board" id="apple-board"></div>
 
-        <div class="music-player" style="margin-top:20px;">
-            <span>♪ BGM: I'm Not The Only One (Piano)</span>
-            <button id="bgm-toggle" class="music-btn" onclick="toggleBGM()">${isPlaying ? '음악 끄기' : '음악 켜기'}</button>
-        </div>
+        ${getMusicPlayerHTML()}
     `;
 
     initAppleBoard();
@@ -303,10 +318,7 @@ function openInstLounge() {
             <button class="btn btn-guest" onclick="playLongTrack('gayo')">가요</button>
         </div>
 
-        <div class="music-player" style="margin-top:25px;">
-            <span>♪ BGM: I'm Not The Only One (Piano)</span>
-            <button id="bgm-toggle" class="music-btn" onclick="toggleBGM()">${isPlaying ? '음악 끄기' : '음악 켜기'}</button>
-        </div>
+        ${getMusicPlayerHTML()}
     `;
 }
 
@@ -317,13 +329,15 @@ function playLongTrack(genreKey) {
     // 선택한 유튜브 영상으로 교체 및 자동 재생
     player.loadVideoById(track.id);
     isPlaying = true;
+
+    currentBgmTitle = `♪ BGM: ${track.title}`;
     updateBgmButtonText();
 
     // 하단 재생 중인 음원 제목 업데이트
-    const bgmSpans = document.querySelectorAll('.music-player span');
-    bgmSpans.forEach(span => {
-        span.innerText = `♪ 재생 중: ${track.title}`;
-    });
+    const titleSpan = document.querySelector('.music-player > span');
+     if (titleSpan) {
+         titleSpan.innerText = currentBgmTitle;
+     }
 }
 // ==========================================
 // 병신스타리그 추첨
@@ -358,10 +372,7 @@ function openRandomizer() {
         <div id="randomizer-result" style="display:none; background:rgba(0,0,0,0.5); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); text-align:center;">
         </div>
 
-        <div class="music-player" style="margin-top:20px;">
-            <span>♪ BGM: I'm Not The Only One (Piano)</span>
-            <button id="bgm-toggle" class="music-btn" onclick="toggleBGM()">${isPlaying ? '음악 끄기' : '음악 켜기'}</button>
-        </div>
+        ${getMusicPlayerHTML()}
     `;
 
     renderOptionGroups();
