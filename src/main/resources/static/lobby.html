@@ -9,23 +9,20 @@
 </head>
 <body>
 
-<!-- 상단 헤더 -->
 <header class="club-header">
     <div class="brand-logo">AZIT MUZIK CLUB</div>
     <div class="user-profile-bar">
-        <!-- 닉네임 클릭 시 내 정보(마이페이지) 모달 연결 예정 -->
+        <!-- 닉네임 클릭 시 내정보(마이페이지) 연결 예정 -->
         <span class="welcome-text"><b id="myInfo" onclick="openMyPageModal()">불러오는 중...</b>님 환영합니다!</span>
         <button class="neon-btn neon-btn-dark" onclick="logout()">로그아웃</button>
     </div>
 </header>
 
-<!-- 메인 대시보드 -->
 <div class="club-container">
 
-    <!-- 중앙 방 목록 영역 -->
     <main class="main-content">
         <div class="content-header">
-            <div class="section-title">🎮 OPEN ROOMS</div>
+            <div class="section-title">ROOMS</div>
             <div>
                 <button class="neon-btn neon-btn-cyan" onclick="fetchRooms()">🔄 새로고침</button>
                 <button class="neon-btn neon-btn-pink" onclick="openCreateModal()">+ 새 방 만들기</button>
@@ -55,7 +52,7 @@
 
     <aside class="sidebar">
         <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
-            <span>👥 FRIENDS</span>
+            <span>FRIENDS</span>
             <button class="neon-btn neon-btn-dark" style="padding: 4px 10px; font-size: 12px;" onclick="location.href='friend.html'">관리 ⚙️</button>
         </div>
 
@@ -66,7 +63,6 @@
 
 </div>
 
-<!-- 방 만들기 모달 팝업 -->
 <div class="modal-overlay" id="createRoomModal">
     <div class="modal-content">
         <h3 style="margin-bottom: 20px; color: #FF007F;">새 게임방 만들기</h3>

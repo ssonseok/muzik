@@ -84,7 +84,7 @@ function getMusicPlayerHTML() {
 }
 
 // ==========================================
-// 2. SPA뷰 로직
+// SPA뷰 로직
 // ==========================================
 
 function showHome() {
@@ -92,7 +92,6 @@ function showHome() {
     const content = document.getElementById('content-area');
     if (!content) return;
 
-    // BGM 플레이어(getMusicPlayerHTML)는 꽂지 말고 pure 메인 메뉴만 렌더링
     content.innerHTML = `
         <div class="brand-sub">suckerson's</div>
         <h1 class="brand-title">AZIT</h1>
@@ -102,7 +101,6 @@ function showHome() {
         </p>
 
         <div class="button-group">
-            <!-- alert 대신 navigateTo('login') 호출 -->
             <button type="button" onclick="navigateTo('login')" class="btn btn-login">로그인 서비스</button>
             <button type="button" onclick="showGuestMenu()" class="btn btn-guest">게스트 서비스</button>
         </div>
@@ -497,13 +495,11 @@ function runRandomizerDraw() {
 async function navigateTo(pageName) {
     if (typeof stopGameTimer === 'function') stopGameTimer();
 
-    // 1. 메인 홈으로 가는 경우
     if (pageName === 'home') {
         showHome();
         return;
     }
 
-    // 2. 외부 HTML 조각(login, signup, gamemenu) 불러오기
     const content = document.getElementById('content-area');
     if (!content) return;
 
@@ -514,7 +510,6 @@ async function navigateTo(pageName) {
         const html = await response.text();
         content.innerHTML = html; // content-area 내부만 교체 (BGM 플레이어는 안 건드림)
 
-        // 3. 화면 교체 후 각각의 JS 이벤트 초기화 함수 실행
         if (pageName === 'login' && typeof initLoginPage === 'function') {
             initLoginPage();
         } else if (pageName === 'signup' && typeof initSignupPage === 'function') {

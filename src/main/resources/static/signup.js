@@ -24,7 +24,6 @@ function initSignupPage() {
 
             if (response.ok) {
                 alert('회원가입이 완료되었습니다! 로그인해 주세요.');
-                // ★ 페이지 전체 이동이 아닌 라우터 호출
                 navigateTo('login');
             } else {
                 alert(message || "회원가입 실패");
