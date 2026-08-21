@@ -1,0 +1,18 @@
+<div class="auth-container">
+    <div class="brand-sub">PLAYGROUND</div>
+    <h1 class="brand-title">GAME MENU</h1>
+    <p class="phrase">플레이할 게임을 선택해주세요!</p>
+
+    <div class="button-group-vertical">
+        <button type="button" class="btn btn-login"
+                onclick="alert('노래듣고맞추기 게임 [MUZIK]에 오신걸 환영합니다!');
+                 location.href='lobby.html';">
+            노래 제목 맞추기 MUZIK</button>
+        <button type="button" class="btn btn-guest" onclick="location.href='liarGame.html'">라이어 찾기</button>
+        <button type="button" class="btn btn-guest" onclick="location.href='mafiaGame.html'">마피아 게임</button>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <button type="button" onclick="handleLogout()" class="btn btn-guest" style="width: auto; padding: 8px 16px;">로그아웃</button>
+    </div>
+</div>

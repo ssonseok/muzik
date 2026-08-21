@@ -1,6 +1,10 @@
-//const BASE_URL = 'http://localhost:8080/api/users';
-const BASE_URL = `${API_BASE}/users`;
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+const USER_BASE_URL = `${API_BASE}/users`;
+
+function initSignupPage() {
+    const signupForm = document.getElementById('signupForm');
+    if (!signupForm) return;
+
+    signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const signupData = {
@@ -10,7 +14,7 @@ const BASE_URL = `${API_BASE}/users`;
         };
 
         try {
-            const response = await fetch(`${BASE_URL}/signup`, {
+            const response = await fetch(`${USER_BASE_URL}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(signupData)
@@ -19,8 +23,9 @@ const BASE_URL = `${API_BASE}/users`;
             const message = await response.text();
 
             if (response.ok) {
-                alert('회원가입 완료');
-                window.location.href = 'login.html';
+                alert('회원가입이 완료되었습니다! 로그인해 주세요.');
+                // ★ 페이지 전체 이동이 아닌 라우터 호출
+                navigateTo('login');
             } else {
                 alert(message || "회원가입 실패");
             }
@@ -29,3 +34,4 @@ const BASE_URL = `${API_BASE}/users`;
             alert('서버 연결 실패');
         }
     });
+}
