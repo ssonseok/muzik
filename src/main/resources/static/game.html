@@ -2,49 +2,64 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>게임방</title>
+    <title>AZIT MUZIK - 게임방</title>
+    <link rel="stylesheet" href="club.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
 
-<h2>MUZIK - 게임방 <span id="roomTitle"></span></h2>
-<div>
-    <span>접속자: <b id="myInfo"></b></span> |
-    <button onclick="leaveRoom()" style="background-color: #ffcccc;">방 나가기</button>
-</div>
+<header class="club-header">
+    <div class="brand-logo">AZIT MUZIK <span id="roomTitle" style="color: #00F2FE; font-size: 20px;"></span></div>
+    <div class="user-profile-bar">
+        <span class="welcome-text">Player: <b id="myInfo">불러오는 중...</b></span>
+        <button class="neon-btn neon-btn-dark" onclick="leaveRoom()" style="border-color: #FF007F; color: #FF007F;">방 나가기</button>
+    </div>
+</header>
 
-<hr>
+<div class="game-container">
 
-<div style="margin-bottom: 15px; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
-    <button id="startBtn" onclick="sendStart()" style="font-weight: bold; padding: 5px 15px;">🎮 게임 시작</button>
-    <span id="gameStatusText" style="margin-left: 10px; color: darkblue; font-weight: bold;">대기 중...</span>
-</div>
+    <div class="game-control-bar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button id="startBtn" class="neon-btn neon-btn-pink" onclick="sendStart()">🎮 게임 시작</button>
+            <span id="gameStatusText" class="status-badge">대기 중...</span>
+        </div>
 
-<div id="playerContainer" style="display: none;">
-    <div id="youtubePlayer"></div>
-</div>
-<div id="volumeControl" style="margin-top: 10px;">
-    🔊 <input type="range" id="volumeSlider" min="0" max="100" value="50" oninput="changeVolume(this.value)">
-    <span id="volumeValue">50%</span>
-</div>
-
-<fieldset style="margin-bottom: 15px;">
-    <legend><b>실시간 채팅 및 정답 입력</b></legend>
-
-    <div id="chatBox" style="width: 100%; height: 250px; border: 1px solid #ccc; overflow-y: scroll; padding: 5px; background-color: #fafafa; box-sizing: border-box;">
-        <p style="color: gray;">[알림] 게임방에 입장하셨습니다. 채팅으로 정답을 맞혀보세요!</p>
+        <div class="volume-control">
+            <span>🔊</span>
+            <input type="range" id="volumeSlider" min="0" max="100" value="50" oninput="changeVolume(this.value)">
+            <span id="volumeValue" style="min-width: 40px; font-size: 13px;">50%</span>
+        </div>
     </div>
 
-    <form id="chatForm" style="margin-top: 10px; display: flex; gap: 5px;">
-        <input type="text" id="chatInput" placeholder="정답 또는 채팅 메시지 입력..." style="flex: 1;" autocomplete="off" required>
-        <button type="submit">전송</button>
-        <button type="button" onclick="sendSkip()" style="background-color: #ffe680;">스킵</button>
-    </form>
-</fieldset>
+    <div id="playerContainer" style="display: none;">
+        <div id="youtubePlayer"></div>
+    </div>
+
+    <div class="chat-container">
+        <div class="section-title" style="margin-bottom: 12px;">💬 LIVE CHAT & ANSWER</div>
+
+        <div id="chatBox" class="chat-box">
+            <div class="chat-notice">
+                <strong style="color: #FF007F;">[알림]</strong> 안녕하세요! 모든 음악의 정답은 한글로만 입력해 주셔야 합니다.
+                띄어쓰기는 상관없습니다!<br>
+                style="color: #AAA;">(예: Gee -> 지, / Touch My Body -> 터치마이바디 or 터치 마이 바디)<br>
+                빠른 시일 내에 영문 정답도 인식될 수 있도록 기능 업데이트하겠습니다. 감사합니다.
+            </div>
+        </div>
+
+        <form id="chatForm" class="chat-form">
+            <input type="text" id="chatInput" class="chat-input" placeholder="정답 또는 채팅 메시지 입력..." autocomplete="off" required>
+            <button type="submit" class="neon-btn neon-btn-pink">전송</button>
+            <button type="button" class="neon-btn neon-btn-yellow" onclick="sendSkip()">스킵</button>
+        </form>
+    </div>
+
+</div>
+
 <script src="config.js"></script>
-<script src="game.js"> </script>
+<script src="game.js"></script>
 
 </body>
 </html>

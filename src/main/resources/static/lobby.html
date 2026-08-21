@@ -2,87 +2,144 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>게임 대기실</title>
+    <title>AZIT MUZIK CLUB - 대기실</title>
+    <link rel="stylesheet" href="club.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body>
 
-<h2>MUZIK 대기실</h2>
-<p>내 정보: <b id="myInfo">불러오는 중...</b></p>
-<button onclick="location.href='mypage.html'">내 정보</button>
-<button onclick="location.href='friend.html'">친구 관리</button>
-<button onclick="logout()">로그아웃</button>
+<!-- 상단 헤더 -->
+<header class="club-header">
+    <div class="brand-logo">AZIT MUZIK CLUB</div>
+    <div class="user-profile-bar">
+        <!-- 닉네임 클릭 시 내 정보(마이페이지) 모달 연결 예정 -->
+        <span class="welcome-text"><b id="myInfo" onclick="openMyPageModal()">불러오는 중...</b>님 환영합니다!</span>
+        <button class="neon-btn neon-btn-dark" onclick="logout()">로그아웃</button>
+    </div>
+</header>
 
-<hr>
+<!-- 메인 대시보드 -->
+<div class="club-container">
 
-<fieldset style="margin-bottom: 20px;">
-    <legend><b>새 게임방 만들기</b></legend>
-    <form id="createRoomForm">
-        <div style="margin-bottom: 8px;">
-            <label>방 제목: </label>
-            <input type="text" id="roomName" required>
-        </div>
-        <div style="margin-bottom: 8px;">
-            <label>최대 인원수: </label>
-            <input type="number" id="maxPlayers" value="4" min="2" max="8" required> 명
-        </div>
-        <div style="margin-bottom: 8px;">
-<!--            <label>비밀번호: </label>-->
-            <input type="password" id="password" placeholder="비밀방 설정 시 입력 (선택)">
-        </div>
-        <div style="margin-bottom: 8px;">
-            <label>장르: </label>
-            <select id="genre">
-<!--                <option value="ALL">전체</option>-->
-                <option value="발라드">발라드</option>
-                <option value="K-POP">K-POP</option>
-                <option value="투니버스">투니버스</option>
-            </select>
-        </div>
-        <div style="margin-bottom: 8px;">
-            <label>문제 개수: </label>
-            <select id="musicCount">
-                <option value="10" selected>10 문제</option>
-                <option value="15">15 문제</option>
-                <option value="20">20 문제</option>
-                <option value="30">30 문제</option>
-            </select>
-        </div>
-        <div style="margin-bottom: 8px;">
-            <label>발매 연도 범위: </label>
-            <input type="number" id="startYear" value="1990" min="1970" max="2026" style="width: 70px;"> 년 ~
-            <input type="number" id="endYear" value="2026" min="1970" max="2026" style="width: 70px;"> 년
+    <!-- 중앙 방 목록 영역 -->
+    <main class="main-content">
+        <div class="content-header">
+            <div class="section-title">🎮 OPEN ROOMS</div>
+            <div>
+                <button class="neon-btn neon-btn-cyan" onclick="fetchRooms()">🔄 새로고침</button>
+                <button class="neon-btn neon-btn-pink" onclick="openCreateModal()">+ 새 방 만들기</button>
+            </div>
         </div>
 
-        <button type="submit" style="margin-top: 10px;">방 생성하기</button>
-    </form>
-</fieldset>
+        <div class="table-container">
+            <table class="club-table">
+                <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>방 제목</th>
+                    <th>장르</th>
+                    <th>인원</th>
+                    <th>상태</th>
+                    <th>입장</th>
+                </tr>
+                </thead>
+                <tbody id="roomListTable">
+                <tr>
+                    <td colspan="6">생성된 방이 없습니다. 방을 만들어보세요!</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
 
-<fieldset>
-    <legend><b>대기실 방 목록 (실시간 자동 갱신 중)</b></legend>
-    <button onclick="fetchRooms()">새로고침</button>
+    <!-- 우측 친구 목록 사이드바 -->
+    <aside class="sidebar">
+        <div class="section-title" style="justify-content: space-between;">
+            <span>👥 FRIENDS</span>
+            <button class="neon-btn neon-btn-dark" style="padding: 4px 8px; font-size: 12px;" onclick="location.href='friend.html'">관리</button>
+        </div>
 
-    <table border="1" style="width: 100%; margin-top: 10px; text-align: center;">
-        <thead>
-        <tr>
-            <th>방 번호</th>
-            <th>방 제목</th>
-            <th>장르</th>
-            <th>인원 수</th>
-            <th>상태</th>
-            <th>입장</th>
-        </tr>
-        </thead>
-        <tbody id="roomListTable">
-        <tr>
-            <td colspan="6">생성된 방이 없습니다.</td>
-        </tr>
-        </tbody>
-    </table>
-</fieldset>
+        <div class="friend-list" id="friendList">
+            <!-- 나중에 friend.js 연동 시 렌더링될 영역 -->
+            <div class="friend-item">
+                <div>
+                    <span class="friend-status status-online"></span>
+                    <span>DJ_KIM</span>
+                </div>
+                <button class="neon-btn neon-btn-cyan" style="padding: 4px 8px; font-size: 11px;">초대</button>
+            </div>
+            <div class="friend-item">
+                <div>
+                    <span class="friend-status status-offline"></span>
+                    <span style="color: #666;">BEAT_MASTER</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+</div>
+
+<!-- 방 만들기 모달 팝업 -->
+<div class="modal-overlay" id="createRoomModal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 20px; color: #FF007F;">새 게임방 만들기</h3>
+        <form id="createRoomForm">
+            <div class="form-group">
+                <label>방 제목</label>
+                <input type="text" id="roomName" class="form-control" placeholder="방제목은 필수입니다!" required>
+            </div>
+            <div class="form-group">
+                <label>최대 인원수</label>
+                <input type="number" id="maxPlayers" class="form-control" value="4" min="2" max="8" required>
+            </div>
+            <div class="form-group" style="display: none;">
+                <label>비밀번호</label>
+                <input type="password" id="password" class="form-control" value="">
+            </div>
+            <div class="form-group">
+                <label>장르</label>
+                <select id="genre" class="form-control">
+                    <option value="발라드">발라드</option>
+                    <option value="K-POP">K-POP</option>
+                    <option value="투니버스">투니버스</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>문제 개수</label>
+                <select id="musicCount" class="form-control">
+                    <option value="10" selected>10 문제</option>
+                    <option value="15">15 문제</option>
+                    <option value="20">20 문제</option>
+                    <option value="30">30 문제</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>발매 연도 범위</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" id="startYear" class="form-control" value="1990" min="1970" max="2026"> 년 ~
+                    <input type="number" id="endYear" class="form-control" value="2026" min="1970" max="2026"> 년
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button type="button" class="neon-btn neon-btn-dark" style="flex: 1;" onclick="closeCreateModal()">취소</button>
+                <button type="submit" class="neon-btn neon-btn-pink" style="flex: 1;">방 생성하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="config.js"></script>
 <script src="lobby.js"></script>
-
+<script>
+    // 모달 제어 전용 소형 함수
+    function openCreateModal() {
+        document.getElementById('createRoomModal').style.display = 'flex';
+    }
+    function closeCreateModal() {
+        document.getElementById('createRoomModal').style.display = 'none';
+    }
+</script>
 </body>
 </html>

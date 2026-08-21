@@ -7,7 +7,7 @@ if (!userId) {
     alert("로그인이 필요합니다.");
     window.location.href = 'login.html';
 } else {
-    document.getElementById('myInfo').innerText = `${nickname} (ID: ${userId})`;
+    document.getElementById('myInfo').innerText = nickname;
 }
 
 let stompClient = null;
@@ -45,13 +45,13 @@ function renderRoomList(rooms) {
         const tr = document.createElement('tr');
 
         tr.innerHTML = `
-            <td>${room.roomId}</td>
-            <td>${room.roomName}</td>
-            <td>${room.genre || '전체'}</td>
-            <td><b>${room.currentPlayers} / ${room.maxPlayers}</b></td>
-            <td>${room.roomStatus || 'WAITING'}</td>
+            <td>#${room.roomId}</td>
+            <td style="font-weight: 600; text-align: left; padding-left: 20px;">${room.roomName}</td>
+            <td><span class="genre-badge">${room.genre || '전체'}</span></td>
+            <td><b style="color:#00F2FE;">${room.currentPlayers}</b> / ${room.maxPlayers}</td>
+            <td style="color: ${room.roomStatus === 'WAITING' ? '#00FF87' : '#FF007F'};">${room.roomStatus || 'WAITING'}</td>
             <td>
-                <button onclick="enterRoom(${room.roomId})">입장하기</button>
+                <button class="neon-btn neon-btn-pink" style="padding: 6px 14px; font-size: 13px;" onclick="enterRoom(${room.roomId})">입장</button>
             </td>
         `;
 
@@ -137,10 +137,8 @@ function connectLobbySocket() {
     stompClient.debug = null;
 
     stompClient.connect({}, function (frame) {
-        console.log("로비 웹소켓 연결 성공!");
 
         stompClient.subscribe('/topic/lobby', function (message) {
-            console.log("로비 실시간 데이터 수신:", message.body);
 
             const updatedRooms = JSON.parse(message.body);
 

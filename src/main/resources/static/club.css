@@ -1,0 +1,402 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Pretendard', sans-serif;
+}
+
+body {
+    background-color: #0B0B12;
+    background-image:
+        radial-gradient(circle at 10% 10%, rgba(255, 0, 127, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(0, 242, 254, 0.15) 0%, transparent 40%);
+    color: #FFFFFF;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 상단 클럽 헤더 */
+.club-header {
+    height: 70px;
+    background: rgba(18, 18, 29, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+}
+
+.brand-logo {
+    font-size: 24px;
+    font-weight: 900;
+    background: linear-gradient(45deg, #FF007F, #00F2FE);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
+}
+
+.user-profile-bar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.welcome-text {
+    font-size: 15px;
+    color: #D1D1E0;
+}
+
+.welcome-text b {
+    color: #00F2FE;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* 메인 대시보드 레이아웃 */
+.club-container {
+    display: flex;
+    flex: 1;
+    padding: 25px;
+    gap: 25px;
+    max-width: 1600px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* 메인 컨텐츠 (방 목록) */
+.main-content {
+    flex: 1;
+    background: rgba(23, 23, 38, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #FFF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 클럽 스타일 버튼 */
+.neon-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.neon-btn-pink {
+    background: #FF007F;
+    color: #FFF;
+    box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+}
+
+.neon-btn-pink:hover {
+    background: #FF2A93;
+    box-shadow: 0 0 25px rgba(255, 0, 127, 0.7);
+    transform: translateY(-2px);
+}
+
+.neon-btn-cyan {
+    background: transparent;
+    border: 1px solid #00F2FE;
+    color: #00F2FE;
+}
+
+.neon-btn-cyan:hover {
+    background: rgba(0, 242, 254, 0.1);
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+}
+
+.neon-btn-dark {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #AAA;
+}
+
+.neon-btn-dark:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #FFF;
+}
+
+/* 방 목록 테이블 */
+.table-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.club-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.club-table th {
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #8A8A9E;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.club-table td {
+    padding: 16px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 15px;
+}
+
+.club-table tbody tr {
+    transition: background 0.2s;
+}
+
+.club-table tbody tr:hover {
+    background: rgba(255, 0, 127, 0.05);
+}
+
+.genre-badge {
+    background: rgba(0, 242, 254, 0.1);
+    color: #00F2FE;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    border: 1px solid rgba(0, 242, 254, 0.3);
+}
+
+/* 우측 사이드바 (친구 목록) */
+.sidebar {
+    width: 320px;
+    background: rgba(23, 23, 38, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.friend-list {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.friend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.friend-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.status-online { background: #00FF87; box-shadow: 0 0 8px #00FF87; }
+.status-offline { background: #555; }
+
+/* 모달 팝업 (새 방 만들기) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #171726;
+    border: 1px solid rgba(255, 0, 127, 0.3);
+    box-shadow: 0 0 30px rgba(255, 0, 127, 0.2);
+    border-radius: 16px;
+    width: 450px;
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 13px;
+    color: #AAA;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    color: #FFF;
+    outline: none;
+}
+
+.form-control:focus {
+    border-color: #FF007F;
+}
+select.form-control {
+    background-color: #171726;
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+select.form-control option {
+    background-color: #171726;
+    color: #FFFFFF;
+    padding: 10px;
+}
+
+/* ==========================================
+   게임방 전용 추가 스타일
+   ========================================== */
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 25px;
+    flex: 1;
+}
+
+/* 상단 컨트롤 바 (시작 / 상태 / 볼륨) */
+.game-control-bar {
+    background: rgba(23, 23, 38, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-badge {
+    color: #00F2FE;
+    font-size: 16px;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.volume-control input[type="range"] {
+    accent-color: #FF007F;
+    cursor: pointer;
+}
+
+/* 게임 채팅 및 로그 박스 */
+.chat-container {
+    background: rgba(23, 23, 38, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 520px;
+    overflow: hidden;
+}
+
+.chat-box {
+    flex: 1;
+    background: rgba(11, 11, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 15px;
+    min-height: 0;
+}
+
+.chat-box p {
+    line-height: 1.4;
+    word-break: break-all;
+}
+
+.chat-notice {
+    background: rgba(255, 0, 127, 0.1);
+    border: 1px solid rgba(255, 0, 127, 0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #E1E1E1;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+/* 하단 채팅 입력 폼 */
+.chat-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.chat-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #FFF;
+    font-size: 15px;
+    outline: none;
+}
+
+.chat-input:focus {
+    border-color: #FF007F;
+    box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
+}
+
+.neon-btn-yellow {
+    background: #FFD700;
+    color: #000;
+    font-weight: 800;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+}
+
+.neon-btn-yellow:hover {
+    background: #FFE44D;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+}
