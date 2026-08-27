@@ -2,7 +2,7 @@ function initGameMenuPage() {
     const nickname = localStorage.getItem('nickname') || '플레이어';
 }
 
-function logout() {
+window.logout = function() {
     localStorage.clear();
     alert('로그아웃 되었습니다.');
 
@@ -11,4 +11,4 @@ function logout() {
     } else {
         window.location.href = 'index.html';
     }
-}
+};
