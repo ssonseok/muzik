@@ -3,6 +3,7 @@ package son.suck.muzik.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import son.suck.muzik.config.JwtTokenProvider;
 import son.suck.muzik.domain.UserOnlineStatus;
 import son.suck.muzik.domain.UserStatus;
 import son.suck.muzik.domain.Users;
@@ -21,6 +22,7 @@ public class UserServiceImpl implements UserService {
 
     private final UsersRepository usersRepository;
     private final GameHistoryResultRepository gameHistoryResultRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     @Override
@@ -58,8 +60,9 @@ public class UserServiceImpl implements UserService {
         }
 
         user.getUserStatus().updateStatus(UserOnlineStatus.ONLINE);
+        String token = jwtTokenProvider.createToken(user.getLoginId());
 
-        return new LoginResponseDto(user.getId(), user.getNickname());
+        return new LoginResponseDto(token, user.getId(), user.getNickname());
     }
 
     @Override
