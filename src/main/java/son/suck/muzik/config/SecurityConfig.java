@@ -20,12 +20,6 @@ public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()) // html, css, js, images 등
-                .requestMatchers("/", "/*.html", "/favicon.ico");
-    }
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 // REST API 서버 특성 설정 (세션 미사용, CSRF 및 기본 폼 로그인 비활성화)
@@ -35,13 +29,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        // 로그인, 회원가입 등 비인증 사용자용 API
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers("/", "/*.html", "/*.js", "/*.css", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         .requestMatchers("/api/users/signup", "/api/users/login").permitAll()
 
                         .anyRequest().authenticated()
                 )
 
-                // JWT 인증 필터배치
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

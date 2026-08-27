@@ -1,13 +1,25 @@
 const ROOMS_API = `${API_BASE}/rooms`;
 
+const token = localStorage.getItem('accessToken');
 const userId = localStorage.getItem('userId');
 const nickname = localStorage.getItem('nickname');
 
-if (!userId) {
+if (!token || !userId) {
     alert("로그인이 필요합니다.");
     window.location.href = 'index.html';
 } else {
-    document.getElementById('myInfo').innerText = nickname;
+    const myInfoElem = document.getElementById('myInfo');
+    if (myInfoElem) myInfoElem.innerText = nickname;
+}
+
+function getAuthHeaders(contentType = 'application/json') {
+    const headers = {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+    };
+    if (contentType) {
+        headers['Content-Type'] = contentType;
+    }
+    return headers;
 }
 
 let stompClient = null;
@@ -15,16 +27,23 @@ let stompClient = null;
 window.onload = function() {
     fetchRooms();
     connectLobbySocket();
+    fetchLobbyFriendList();
 };
 
-// 방 목록 불러오기
+// 방 목록 불러오기 (GET)
 async function fetchRooms() {
     try {
-        const response = await fetch(ROOMS_API);
+        const response = await fetch(ROOMS_API, {
+            method: 'GET',
+            headers: getAuthHeaders(null)
+        });
 
         if (response.ok) {
             const rooms = await response.json();
             renderRoomList(rooms);
+        } else if (response.status === 401 || response.status === 403) {
+            alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+            logout();
         }
     } catch (error) {
         console.error("방 목록 불러오기 실패:", error);
@@ -34,6 +53,7 @@ async function fetchRooms() {
 // 방 목록 HTML 테이블 렌더링
 function renderRoomList(rooms) {
     const tbody = document.getElementById('roomListTable');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     if (!rooms || rooms.length === 0) {
@@ -59,55 +79,52 @@ function renderRoomList(rooms) {
     });
 }
 
-// 방 생성 요청
-document.getElementById('createRoomForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+// 방 생성 요청 (POST)
+const createRoomForm = document.getElementById('createRoomForm');
+if (createRoomForm) {
+    createRoomForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    const createData = {
-        hostUserId: parseInt(userId),
-        roomName: document.getElementById('roomName').value,
-        maxPlayers: parseInt(document.getElementById('maxPlayers').value),
-        password: document.getElementById('password').value,
-        genre: document.getElementById('genre').value,
-        musicCount: parseInt(document.getElementById('musicCount').value),
-        startYear: parseInt(document.getElementById('startYear').value),
-        endYear: parseInt(document.getElementById('endYear').value)
-    };
+        const createData = {
+            hostUserId: parseInt(userId),
+            roomName: document.getElementById('roomName').value,
+            maxPlayers: parseInt(document.getElementById('maxPlayers').value),
+            password: document.getElementById('password').value,
+            genre: document.getElementById('genre').value,
+            musicCount: parseInt(document.getElementById('musicCount').value),
+            startYear: parseInt(document.getElementById('startYear').value),
+            endYear: parseInt(document.getElementById('endYear').value)
+        };
 
-    try {
-        const response = await fetch(ROOMS_API, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(createData)
-        });
+        try {
+            const response = await fetch(ROOMS_API, {
+                method: 'POST',
+                headers: getAuthHeaders('application/json'),
+                body: JSON.stringify(createData)
+            });
 
-        if (response.ok) {
-            const roomResponse = await response.json();
+            if (response.ok) {
+                const roomResponse = await response.json();
+                alert(`방이 생성되었습니다! (방 번호: ${roomResponse.roomId})`);
+                window.location.href = `game.html?roomId=${roomResponse.roomId}`;
+            } else {
+                const errorMsg = await response.text();
+                alert("방 생성 실패: " + errorMsg);
+            }
 
-            alert(`방이 생성되었습니다! (방 번호: ${roomResponse.roomId})`);
-
-            window.location.href = `game.html?roomId=${roomResponse.roomId}`;
-        } else {
-            const errorMsg = await response.text();
-            alert("방 생성 실패: " + errorMsg);
+        } catch (error) {
+            console.error("방 생성 에러:", error);
         }
+    });
+}
 
-    } catch (error) {
-        console.error("방 생성 에러:", error);
-    }
-});
-
-// 방 입장 요청
+// 방 입장 요청 (POST)
 async function enterRoom(roomId) {
     try {
-        const response = await fetch(
-            `${ROOMS_API}/${roomId}/enter?userId=${userId}`,
-            {
-                method: 'POST'
-            }
-        );
+        const response = await fetch(`${ROOMS_API}/${roomId}/enter?userId=${userId}`, {
+            method: 'POST',
+            headers: getAuthHeaders(null)
+        });
 
         if (response.ok) {
             window.location.href = `game.html?roomId=${roomId}`;
@@ -121,48 +138,16 @@ async function enterRoom(roomId) {
     }
 }
 
-// 로그아웃
-function logout() {
-    localStorage.clear();
-    window.location.href = 'index.html';
-}
-
-// 로비 웹소켓 연결
-function connectLobbySocket() {
-    const socket = new SockJS(`${SERVER_URL}/ws`);
-
-    stompClient = Stomp.over(socket);
-
-    // STOMP 디버그 로그 끄기
-    stompClient.debug = null;
-
-    stompClient.connect({}, function (frame) {
-
-        stompClient.subscribe('/topic/lobby', function (message) {
-
-            const updatedRooms = JSON.parse(message.body);
-
-            renderRoomList(updatedRooms);
-        });
-
-    }, function(error) {
-        console.error("로비 웹소켓 연결 에러:", error);
-    });
-}
-
-window.onload = function() {
-    fetchRooms();
-    connectLobbySocket();
-    fetchLobbyFriendList(); // 친구 상태 불러오기
-};
-
 // 친구 목록 및 접속 상태 조회
 async function fetchLobbyFriendList() {
     const friendListContainer = document.getElementById('friendList');
     if (!friendListContainer) return;
 
     try {
-        const response = await fetch(`${SERVER_URL}/api/friends?userId=${userId}`);
+        const response = await fetch(`${SERVER_URL}/api/friends?userId=${userId}`, {
+            method: 'GET',
+            headers: getAuthHeaders(null)
+        });
         if (!response.ok) throw new Error('친구 목록 조회 실패');
 
         const friends = await response.json();
@@ -176,6 +161,7 @@ async function fetchLobbyFriendList() {
 // 친구 상태 목록 화면
 function renderLobbyFriends(friends) {
     const friendListContainer = document.getElementById('friendList');
+    if (!friendListContainer) return;
     friendListContainer.innerHTML = '';
 
     if (!friends || friends.length === 0) {
@@ -188,7 +174,6 @@ function renderLobbyFriends(friends) {
         item.className = 'friend-item';
         item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);';
 
-        // 접속 상태별 표시 설정
         let statusClass = 'status-offline';
         let statusText = '오프라인';
         let nameColor = 'color: #777;';
@@ -212,5 +197,27 @@ function renderLobbyFriends(friends) {
         `;
 
         friendListContainer.appendChild(item);
+    });
+}
+
+// 로그아웃
+function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+}
+
+// 로비 웹소켓 연결
+function connectLobbySocket() {
+    const socket = new SockJS(`${SERVER_URL}/ws`);
+    stompClient = Stomp.over(socket);
+    stompClient.debug = null;
+
+    stompClient.connect({ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }, function (frame) {
+        stompClient.subscribe('/topic/lobby', function (message) {
+            const updatedRooms = JSON.parse(message.body);
+            renderRoomList(updatedRooms);
+        });
+    }, function(error) {
+        console.error("로비 웹소켓 연결 에러:", error);
     });
 }

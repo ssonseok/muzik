@@ -22,6 +22,7 @@ function initLoginPage() {
             if (response.ok) {
                 const result = await response.json();
 
+                localStorage.setItem('accessToken', result.token);
                 localStorage.setItem('userId', result.userId);
                 localStorage.setItem('nickname', result.nickname);
 
