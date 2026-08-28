@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
         }
 
         user.getUserStatus().updateStatus(UserOnlineStatus.ONLINE);
-        String token = jwtTokenProvider.createToken(user.getLoginId());
+        String token = jwtTokenProvider.createToken(user.getId(), user.getLoginId());
 
         return new LoginResponseDto(token, user.getId(), user.getNickname());
     }

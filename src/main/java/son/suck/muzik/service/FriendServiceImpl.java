@@ -105,16 +105,7 @@ public class FriendServiceImpl implements FriendService{
         List<UserFriend> acceptedFriends = userFriendRepository.findByCurrentUserIdAndStatus(currentUserId, "ACCEPTED");
 
         return acceptedFriends.stream()
-                .map(uf -> {
-                    Users friendUser = uf.getFriendUser();
-                    UserStatus userStatus = friendUser.getUserStatus();
-
-                    UserOnlineStatus status = (userStatus != null)
-                            ? userStatus.getStatus()
-                            : UserOnlineStatus.OFFLINE;
-
-                    return new FriendListResponseDto(uf.getId(), friendUser, status);
-                })
+                .map(uf -> new FriendListResponseDto(uf.getId(), uf.getFriendUser()))
                 .collect(Collectors.toList());
     }
 }

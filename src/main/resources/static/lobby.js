@@ -23,11 +23,15 @@ function getAuthHeaders(contentType = 'application/json') {
 }
 
 let stompClient = null;
+let friendListInterval = null;
 
 window.onload = function() {
     fetchRooms();
     connectLobbySocket();
     fetchLobbyFriendList();
+
+    if (friendListInterval) clearInterval(friendListInterval);
+        friendListInterval = setInterval(fetchLobbyFriendList, 3000);
 };
 
 // 방 목록 불러오기 (GET)
@@ -174,26 +178,40 @@ function renderLobbyFriends(friends) {
         item.className = 'friend-item';
         item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);';
 
-        let statusClass = 'status-offline';
+        let statusColor = '#777';
         let statusText = '오프라인';
         let nameColor = 'color: #777;';
 
-        if (friend.status === 'ONLINE' || friend.status === 'LOBBY') {
-            statusClass = 'status-online';
-            statusText = '대기실';
-            nameColor = 'color: #FFF; font-weight: 600;';
-        } else if (friend.status === 'IN_GAME') {
-            statusClass = 'status-ingame';
-            statusText = '게임 중';
-            nameColor = 'color: #FF007F; font-weight: 600;';
+        switch (friend.status) {
+            case 'ONLINE':
+                statusColor = '#2ecc71';
+                statusText = '온라인';
+                nameColor = 'color: #FFF; font-weight: 600;';
+                break;
+            case 'IN_ROOM':
+                statusColor = '#f39c12';
+                statusText = '방 입장';
+                nameColor = 'color: #FFF; font-weight: 600;';
+                break;
+            case 'PLAYING':
+                statusColor = '#e74c3c';
+                statusText = '게임 중';
+                nameColor = 'color: #FF007F; font-weight: 600;';
+                break;
+            case 'OFFLINE':
+            default:
+                statusColor = '#777';
+                statusText = '오프라인';
+                nameColor = 'color: #777;';
+                break;
         }
 
         item.innerHTML = `
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span class="friend-status ${statusClass}"></span>
+                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: ${statusColor}; display: inline-block;"></span>
                 <span style="${nameColor}">${friend.friendNickname}</span>
             </div>
-            <span style="font-size: 11px; color: #AAA;">${statusText}</span>
+            <span style="font-size: 11px; color: ${statusColor}; font-weight: 500;">${statusText}</span>
         `;
 
         friendListContainer.appendChild(item);

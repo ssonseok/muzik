@@ -32,6 +32,7 @@ public class SecurityConfig {
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers("/", "/*.html", "/*.js", "/*.css", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         .requestMatchers("/api/users/signup", "/api/users/login").permitAll()
+                        .requestMatchers("/ws/**", "/ws").permitAll()
 
                         .anyRequest().authenticated()
                 )

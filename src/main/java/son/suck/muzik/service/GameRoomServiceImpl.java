@@ -2,12 +2,14 @@ package son.suck.muzik.service;
 
 import son.suck.muzik.domain.GameParticipant;
 import son.suck.muzik.domain.GameRoom;
+import son.suck.muzik.domain.UserStatus;
 import son.suck.muzik.domain.Users;
 import son.suck.muzik.dto.CreateRoomRequest;
 import son.suck.muzik.dto.GameRoomDetailResponse;
 import son.suck.muzik.dto.GameRoomResponse;
 import son.suck.muzik.repository.GameParticipantRepository;
 import son.suck.muzik.repository.GameRoomRepository;
+import son.suck.muzik.repository.UserStatusRepository;
 import son.suck.muzik.repository.UsersRepository;
 import son.suck.muzik.service.GameRoomService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class GameRoomServiceImpl implements GameRoomService {
     private final GameRoomRepository gameRoomRepository;
     private final GameParticipantRepository gameParticipantRepository;
     private final UsersRepository usersRepository;
+    private final UserStatusRepository userStatusRepository;
 
     /**
      * 1. 방 생성 + 방장 자동 입장
@@ -108,6 +111,10 @@ public class GameRoomServiceImpl implements GameRoomService {
 
         gameParticipantRepository.save(participant);
         gameRoom.getParticipants().add(participant);
+
+        UserStatus userStatus = userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("UserStatus를 찾을 수 없습니다."));
+        userStatus.updateInRoom(roomId);
     }
 
     /**
@@ -141,16 +148,20 @@ public class GameRoomServiceImpl implements GameRoomService {
         gameParticipantRepository.delete(participant);
         gameParticipantRepository.flush();
 
-        // 2. 남아있는 참여자가 없는 경우 -> 방 삭제
+        userStatusRepository.findByUserId(userId)
+                .ifPresent(UserStatus::updateOnline);
+
+        // 남아있는 참여자가 없는 경우 -> 방 삭제
         if (gameRoom.getParticipants().isEmpty()) {
             gameRoomRepository.delete(gameRoom);
             return;
         }
 
-        // 3. 방장이 나갔고 남아있는 유저가 있는 경우 -> 방장 권한 위임
+        // 방장이 나갔고 남아있는 유저가 있는 경우 -> 방장 권한 위임
         if (wasHost) {
             GameParticipant nextHost = gameRoom.getParticipants().get(0); // 가장 먼저 들어온 유저
             nextHost.updateHost(true); // isHost = true 변경 (엔티티 메서드 필요)
         }
+
     }
 }

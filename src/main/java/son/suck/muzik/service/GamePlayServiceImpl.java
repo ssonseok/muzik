@@ -75,6 +75,13 @@ public class GamePlayServiceImpl implements GamePlayService {
 
         gameRoom.getParticipants().forEach(GameParticipant::resetScore);
 
+        gameRoom.getParticipants().forEach(participant -> {
+            UserStatus status = participant.getUser().getUserStatus();
+            if (status != null) {
+                status.updatePlaying();
+            }
+        });
+
         GameSession gameSession = new GameSession(quizSet);
         activeGames.put(gameRoom.getId(), gameSession);
 
@@ -279,5 +286,12 @@ public class GamePlayServiceImpl implements GamePlayService {
         saveGameHistory(roomId, resultsDto);
 
         gameRoom.updateStatus("WAITING");
+
+        gameRoom.getParticipants().forEach(participant -> {
+            UserStatus status = participant.getUser().getUserStatus();
+            if (status != null) {
+                status.updateInRoom(roomId);
+            }
+        });
     }
 }

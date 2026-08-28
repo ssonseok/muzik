@@ -6,10 +6,15 @@ import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
+import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import son.suck.muzik.domain.UserStatus;
 import son.suck.muzik.dto.ChatMessageDto;
 import son.suck.muzik.dto.GameRoomDetailResponse;
 import son.suck.muzik.dto.GameRoomResponse;
+import son.suck.muzik.repository.UserStatusRepository;
 import son.suck.muzik.service.GameRoomService;
 
 import java.util.List;
@@ -21,8 +26,26 @@ public class WebSocketEventListener {
 
     private final GameRoomService gameRoomService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserStatusRepository userStatusRepository;
 
     @EventListener
+    @Transactional
+    public void handleWebSocketConnectListener(SessionConnectEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+
+        if (headerAccessor.getSessionAttributes() != null) {
+            Long userId = (Long) headerAccessor.getSessionAttributes().get("userId");
+
+            if (userId != null) {
+                userStatusRepository.findByUserId(userId)
+                        .ifPresent(UserStatus::updateOnline);
+                log.info("웹소켓 연결 감지 - 유저 ID: {} [ONLINE]", userId);
+            }
+        }
+    }
+
+    @EventListener
+    @Transactional
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
@@ -66,6 +89,12 @@ public class WebSocketEventListener {
             } catch (Exception e) {
                 log.error("자동 퇴장 처리 중 오류 발생: {}", e.getMessage());
             }
+        }
+
+        if (userId != null) {
+            userStatusRepository.findByUserId(userId)
+                    .ifPresent(UserStatus::updateOffline);
+            log.info("웹소켓 연결 종료 - 유저 ID: {} [OFFLINE]", userId);
         }
     }
 }
