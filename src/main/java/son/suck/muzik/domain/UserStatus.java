@@ -24,6 +24,8 @@ public class UserStatus {
     @Enumerated(EnumType.STRING)
     private UserOnlineStatus status;
 
+    private Long currentRoomId;
+
     @Builder
     public UserStatus(Users user, UserOnlineStatus status) {
         this.user = user;
@@ -36,5 +38,24 @@ public class UserStatus {
 
     public void updateStatus(UserOnlineStatus status) {
         this.status = status;
+    }
+
+    public void updateOnline() {
+        this.status = UserOnlineStatus.ONLINE;
+        this.currentRoomId = null;
+    }
+
+    public void updateInRoom(Long roomId) {
+        this.status = UserOnlineStatus.IN_ROOM;
+        this.currentRoomId = roomId;
+    }
+
+    public void updatePlaying() {
+        this.status = UserOnlineStatus.PLAYING;
+    }
+
+    public void updateOffline() {
+        this.status = UserOnlineStatus.OFFLINE;
+        this.currentRoomId = null;
     }
 }
