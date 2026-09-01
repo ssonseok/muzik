@@ -161,15 +161,20 @@ const urlParams = new URLSearchParams(window.location.search);
         }
     }
 
-    async function leaveRoom() {
+async function leaveRoom() {
     try {
-        await fetch(`${API_BASE}/${roomId}/leave?userId=${userId}`, {
+        await fetch(`${SERVER_URL}/api/rooms/${roomId}/leave?userId=${userId}`, {
             method: 'POST'
         });
-    } catch (e) {
-        console.error("퇴장 요청 에러:", e);
+    } catch (error) {
+        console.error('퇴장 요청 중 오류 발생:', error);
     } finally {
-        if (stompClient) stompClient.disconnect();
+        if (stompClient) {
+            try {
+                stompClient.disconnect();
+            } catch (e) {
+            }
+        }
         window.location.href = 'lobby.html';
     }
 }

@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**", "/ws").permitAll()
 
                         .requestMatchers("/api/friends/**").permitAll()
+                        .requestMatchers("/api/rooms/**").permitAll()
 
                         .anyRequest().authenticated()
                 )

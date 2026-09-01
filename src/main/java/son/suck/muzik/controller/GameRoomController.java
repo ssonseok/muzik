@@ -77,6 +77,8 @@ public class GameRoomController {
             @PathVariable("roomId") Long roomId,
             @RequestParam("userId") Long userId) {
 
+        System.out.println("퇴장 API 호출됨 roomId: " + roomId + ", userId: " + userId);
+
         gameRoomService.leaveRoom(roomId, userId);
 
         // 퇴장 후 로비의 인원수/방목록 갱신을 위해 웹소켓 실시간 방송
