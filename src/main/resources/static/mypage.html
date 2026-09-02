@@ -2,28 +2,35 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>내 정보</title>
+    <title>내 정보 - AZIT MUZIK CLUB</title>
+    <link rel="stylesheet" href="club.css">
 </head>
-<body>
+<body class="mypage-body">
 
-<h1>내 정보</h1>
-<hr>
+<div class="mypage-card">
+    <h1>USER STATS</h1>
 
-<div>
-    <p>총 게임 수: <span id="totalGames">0</span> 판</p>
-    <p>승리 횟수(1위): <span id="winCount">0</span> 회</p>
-    <p>승률: <span id="winRate">0</span> %</p>
-    <p>최고 점수: <span id="maxScore">0</span> 점</p>
+    <div class="stat-item">
+        <span>총 게임 수</span>
+        <span class="stat-value"><span id="totalGames">0</span> 판</span>
+    </div>
+    <div class="stat-item">
+        <span>승리 횟수 (1위)</span>
+        <span class="stat-value"><span id="winCount">0</span> 회</span>
+    </div>
+    <div class="stat-item">
+        <span>승률</span>
+        <span class="stat-value"><span id="winRate">0</span> %</span>
+    </div>
+    <div class="stat-item">
+        <span>최고 점수</span>
+        <span class="stat-value"><span id="maxScore">0</span> 점</span>
+    </div>
+
+    <button class="neon-btn neon-btn-pink" style="width: 100%; margin-top: 25px; padding: 12px;" onclick="location.href='lobby.html'">로비로 돌아가기</button>
 </div>
 
-<br>
-<button onclick="location.href='lobby.html'">로비로 돌아가기</button>
-
 <script src="config.js"></script>
-<script src="mypage.js">
-
-</script>
-
-
+<script src="mypage.js"></script>
 </body>
 </html>
