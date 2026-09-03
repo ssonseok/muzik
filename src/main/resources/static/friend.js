@@ -41,11 +41,11 @@ function sendFriendRequest() {
 }
 
 function fetchReceivedRequests() {
-    const token = localStorage.getItem('token'); // 👈 토큰 추가
+    const token = localStorage.getItem('token');
 
     fetch(`${SERVER_URL}/api/friends/requests/received?userId=${userId}`, {
         headers: {
-            'Authorization': 'Bearer ' + token // 👈 헤더 추가
+            'Authorization': 'Bearer ' + token
         }
     })
     .then(response => {
@@ -99,11 +99,11 @@ function acceptFriendRequest(friendshipId) {
 }
 
 function fetchFriendList() {
-    const token = localStorage.getItem('token'); // 👈 토큰 추가
+    const token = localStorage.getItem('token');
 
     fetch(`${SERVER_URL}/api/friends?userId=${userId}`, {
         headers: {
-            'Authorization': 'Bearer ' + token // 👈 헤더 추가
+            'Authorization': 'Bearer ' + token
         }
     })
     .then(response => {

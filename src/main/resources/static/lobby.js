@@ -109,7 +109,7 @@ if (createRoomForm) {
 
             if (response.ok) {
                 const roomResponse = await response.json();
-                alert(`방이 생성되었습니다! (방 번호: ${roomResponse.roomId})`);
+                alert(`방이 생성되었습니다!`);
                 window.location.href = `game.html?roomId=${roomResponse.roomId}`;
             } else {
                 const errorMsg = await response.text();
