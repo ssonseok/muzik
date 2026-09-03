@@ -5,7 +5,7 @@ if (!userId) {
     alert("로그인이 필요합니다.");
     window.location.href = 'index.html';
 } else {
-    document.getElementById('myInfo').innerText = `${nickname} (ID: ${userId})`;
+    document.getElementById('myInfo').innerText = `${nickname}님 환영합니다!`;
 }
 
 window.onload = function() {
@@ -20,7 +20,7 @@ function sendFriendRequest() {
         return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
 
     fetch(`${SERVER_URL}/api/friends/request?userId=${userId}`, {
         method: 'POST',
@@ -35,18 +35,16 @@ function sendFriendRequest() {
         if (!response.ok) throw new Error(message || '친구 요청 실패');
         alert(message);
         document.getElementById('targetNickname').value = '';
-        fetchReceivedRequests(); // 요청 보낸 후 목록 새로고침
+        fetchReceivedRequests();
     })
     .catch(error => alert(error.message));
 }
 
 function fetchReceivedRequests() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
 
     fetch(`${SERVER_URL}/api/friends/requests/received?userId=${userId}`, {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
+        headers: { 'Authorization': 'Bearer ' + token }
     })
     .then(response => {
         if (!response.ok) throw new Error('받은 요청 목록 조회 실패');
@@ -57,17 +55,16 @@ function fetchReceivedRequests() {
         tbody.innerHTML = '';
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3">받은 친구 요청이 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #888;">받은 친구 요청이 없습니다.</td></tr>';
             return;
         }
 
         data.forEach(req => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${req.friendshipId}</td>
-                <td>${req.requesterNickname} (ID: ${req.requesterUserId})</td>
-                <td>
-                    <button onclick="acceptFriendRequest(${req.friendshipId})">✅ 수락</button>
+                <td><b>${req.requesterNickname}</b>님의 친구 요청</td>
+                <td style="text-align: right;">
+                    <button class="neon-btn neon-btn-pink" style="padding: 4px 10px; font-size: 12px;" onclick="acceptFriendRequest(${req.friendshipId})">✅ 수락</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -75,18 +72,16 @@ function fetchReceivedRequests() {
     })
     .catch(error => {
         console.error(error);
-        document.getElementById('receivedRequestTable').innerHTML = '<tr><td colspan="3">목록 로드 실패</td></tr>';
+        document.getElementById('receivedRequestTable').innerHTML = '<tr><td colspan="2" style="text-align: center; color: #888;">목록 로드 실패</td></tr>';
     });
 }
 
 function acceptFriendRequest(friendshipId) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
 
     fetch(`${SERVER_URL}/api/friends/accept/${friendshipId}?userId=${userId}`, {
         method: 'PATCH',
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
+        headers: { 'Authorization': 'Bearer ' + token }
     })
     .then(async response => {
         const message = await response.text();
@@ -99,12 +94,10 @@ function acceptFriendRequest(friendshipId) {
 }
 
 function fetchFriendList() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
 
     fetch(`${SERVER_URL}/api/friends?userId=${userId}`, {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
+        headers: { 'Authorization': 'Bearer ' + token }
     })
     .then(response => {
         if (!response.ok) throw new Error('친구 목록 조회 실패');
@@ -115,7 +108,7 @@ function fetchFriendList() {
         tbody.innerHTML = '';
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3">등록된 친구가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #888;">등록된 친구가 없습니다.</td></tr>';
             return;
         }
 
@@ -129,15 +122,14 @@ function fetchFriendList() {
             else if (friend.status === 'IN_GAME') statusText = '🔴 게임 중';
 
             tr.innerHTML = `
-                <td>${friend.friendUserId}</td>
-                <td>${friend.friendNickname}</td>
-                <td>${statusText}</td>
+                <td><b>${friend.friendNickname}</b></td>
+                <td style="text-align: right;">${statusText}</td>
             `;
             tbody.appendChild(tr);
         });
     })
     .catch(error => {
         console.error(error);
-        document.getElementById('friendListTable').innerHTML = '<tr><td colspan="3">목록 로드 실패</td></tr>';
+        document.getElementById('friendListTable').innerHTML = '<tr><td colspan="2" style="text-align: center; color: #888;">목록 로드 실패</td></tr>';
     });
 }
