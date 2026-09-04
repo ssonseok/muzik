@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MafiaCreateRoomRequestDto {
 
-    private Long hostUserId;
     private String roomName;
     private int maxPlayers;
-    private String password;
+    private String password;//테이블은있는데 muzik에서 미구현이라 할까말까 ;;
 
 }

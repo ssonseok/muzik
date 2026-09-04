@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 public class MafiaVoteRequestDto {
 
     private Long roomId;
-    private Long voterId;
     private Long targetId;
 }
