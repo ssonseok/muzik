@@ -25,22 +25,30 @@ public class GameRoom {
     private int maxPlayers; // 최대 인원 (예: 8명)
 
     @Column(nullable = false, length = 20)
-    private String roomStatus;
+    private String roomStatus; //게임 시작여부(waiting,playing)
 
     @Column(length = 50)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
+    private RoomType roomType = RoomType.muzik;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private GamePhase gamePhase;
+
+    @Column(nullable = false)
+    private int roundNo = 0;
+
+    @Column(length = 30)
     private String genre;
 
-    @Column(nullable = false)
-    private int startYear;
+    private Integer startYear;
 
-    @Column(nullable = false)
-    private int endYear;
+    private Integer endYear;
 
-    @Column(nullable = false)
-    private int musicCount;
+    private Integer musicCount;
 
     @OneToMany(mappedBy = "gameRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GameParticipant> participants = new ArrayList<>();
@@ -56,9 +64,30 @@ public class GameRoom {
         this.startYear = startYear;
         this.endYear = endYear;
         this.musicCount = musicCount;
+        this.roomType = RoomType.muzik;
+        this.gamePhase = GamePhase.WAITING;
+    }
+
+    @Builder(builderClassName = "MiniGameRoomBuilder", builderMethodName = "miniGameRoomBuilder")
+    public GameRoom(String roomName, int maxPlayers, String roomStatus, String password, RoomType roomType) {
+        this.roomName = roomName;
+        this.maxPlayers = maxPlayers;
+        this.roomStatus = roomStatus;
+        this.password = password;
+        this.roomType = roomType;
+        this.gamePhase = GamePhase.WAITING;
+        this.roundNo = 0;
     }
 
     public void updateStatus(String roomStatus) {
         this.roomStatus = roomStatus;
+    }
+
+    public void updatePhase(GamePhase gamePhase) {
+        this.gamePhase = gamePhase;
+    }
+
+    public void incrementRound() {
+        this.roundNo++;
     }
 }
