@@ -28,12 +28,28 @@ public class GameParticipant {
     @Column(nullable = false)
     private int currentScore; // 게임 중 실시간 획득 점수 (웹소켓 스코어보드용)
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private Mafia_Role mafiaRole;
+
+    @Column(nullable = false)
+    private boolean isAlive = true;
+
     @Builder
     public GameParticipant(Users user, GameRoom gameRoom, boolean isHost) {
         this.user = user;
         this.gameRoom = gameRoom;
         this.isHost = isHost;
         this.currentScore = 0;
+        this.isAlive = true;
+    }
+
+    public void assignRole(Mafia_Role role) {
+        this.mafiaRole = role;
+    }
+
+    public void die() {
+        this.isAlive = false;
     }
 
     public void addScore(int score) {
