@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,19 +20,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-        // Request Header에서 Bearer 토큰 추출
         String token = resolveToken(request);
 
-        // 토큰 유효성 검증
-        if (token != null && jwtTokenProvider.validateToken(token)) {
+        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+            // 1. 토큰에서 loginId와 userId를 각각 추출
             String loginId = jwtTokenProvider.getLoginId(token);
+            Long userId = jwtTokenProvider.getUserId(token);
 
-            // 스프링 시큐리티 인증 객체 생성 및 Context 저장
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(loginId, null, Collections.emptyList());
+            // 2. UserPrincipal 상자에 담기
+            UserPrincipal principal = new UserPrincipal(userId, loginId);
+
+            // 3. 문자열 대신 'UserPrincipal' 객체를 Authentication에 통째로 태우기
+            Authentication authentication =
+                    new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
