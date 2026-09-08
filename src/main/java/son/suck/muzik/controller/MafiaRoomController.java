@@ -12,6 +12,8 @@ import son.suck.muzik.dto.MafiaCreateRoomRequestDto;
 import son.suck.muzik.dto.MafiaRoomResponse;
 import son.suck.muzik.service.MafiaRoomService;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/mafia/rooms")
@@ -19,6 +21,7 @@ import son.suck.muzik.service.MafiaRoomService;
 public class MafiaRoomController {
     private final MafiaRoomService mafiaRoomService;
 
+    //방생성
     @PostMapping
     public ResponseEntity<MafiaRoomResponse> createRoom(
             @RequestBody MafiaCreateRoomRequestDto requestDto,
@@ -29,5 +32,12 @@ public class MafiaRoomController {
 
         MafiaRoomResponse response = mafiaRoomService.createRoom(requestDto, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    //방목록
+    @GetMapping
+    public ResponseEntity<List<MafiaRoomResponse>> getRoomList() {
+        List<MafiaRoomResponse> roomList = mafiaRoomService.getRoomList();
+        return ResponseEntity.ok(roomList);
     }
 }

@@ -55,7 +55,11 @@ public class MafiaRoomServiceImpl implements MafiaRoomService{
 
     @Override
     public List<MafiaRoomResponse> getRoomList() {
-        return List.of();
+        List<GameRoom> rooms = gameRoomRepository.findByRoomTypeAndRoomStatusOrderByIdDesc(RoomType.mafia, "WAITING");
+
+        return rooms.stream()
+                .map(MafiaRoomResponse::new)
+                .toList();
     }
 
     @Override
