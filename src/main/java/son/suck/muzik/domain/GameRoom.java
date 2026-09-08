@@ -77,6 +77,10 @@ public class GameRoom {
         this.roomType = roomType;
         this.gamePhase = GamePhase.WAITING;
         this.roundNo = 0;
+        this.genre = "NONE";
+        this.startYear = 0;
+        this.endYear = 0;
+        this.musicCount = 0;
     }
 
     public void updateStatus(String roomStatus) {
