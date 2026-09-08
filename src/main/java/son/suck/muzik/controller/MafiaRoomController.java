@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import son.suck.muzik.config.JwtTokenProvider;
 import son.suck.muzik.config.UserPrincipal;
@@ -39,5 +40,14 @@ public class MafiaRoomController {
     public ResponseEntity<List<MafiaRoomResponse>> getRoomList() {
         List<MafiaRoomResponse> roomList = mafiaRoomService.getRoomList();
         return ResponseEntity.ok(roomList);
+    }
+
+    //방입장
+    @PostMapping("/{roomId}/join")
+    public ResponseEntity<Void> joinRoom(@PathVariable Long roomId,
+                                         @AuthenticationPrincipal(expression = "userId") Long userId) {
+
+        mafiaRoomService.joinRoom(roomId, userId);
+        return ResponseEntity.ok().build();
     }
 }

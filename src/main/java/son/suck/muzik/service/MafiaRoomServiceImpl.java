@@ -63,8 +63,35 @@ public class MafiaRoomServiceImpl implements MafiaRoomService{
     }
 
     @Override
+    @Transactional
     public void joinRoom(Long roomId, Long userId) {
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        if (!"WAITING".equals(gameRoom.getRoomStatus())) {
+            throw new IllegalStateException("이미 게임이 시작되었거나 종료된 방입니다.");
+        }
+
+        if (gameRoom.getParticipants().size() >= gameRoom.getMaxPlayers()) {
+            throw new IllegalArgumentException("방이 가득 찼습니다.");
+        }
+
+        boolean alreadyJoined = gameRoom.getParticipants().stream()
+                .anyMatch(p -> p.getUser().getId().equals(userId));
+        if (alreadyJoined) {
+            throw new IllegalStateException("이미 입장해 있는 방입니다.");
+        }
+
+        GameParticipant participant = GameParticipant.builder()
+                .user(user)
+                .gameRoom(gameRoom)
+                .isHost(false)
+                .build();
+
+        gameParticipantRepository.save(participant);
     }
 
     @Override
