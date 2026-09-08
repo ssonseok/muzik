@@ -14,6 +14,7 @@ public class MafiaNightActionRequestDto {
     public enum ActionType {
         MAFIA_KILL,
         DOCTOR_HEAL,
-        POLICE_INVESTIGATE
+        POLICE_INVESTIGATE,
+        SOLDIER_DEFEND
     }
 }
