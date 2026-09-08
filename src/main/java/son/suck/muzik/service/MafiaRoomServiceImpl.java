@@ -95,8 +95,32 @@ public class MafiaRoomServiceImpl implements MafiaRoomService{
     }
 
     @Override
+    @Transactional
     public void leaveRoom(Long roomId, Long userId) {
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
+        GameParticipant targetParticipant = gameRoom.getParticipants().stream()
+                .filter(p -> p.getUser().getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("해당 방에 참여하고 있지 않습니다."));
+
+        boolean wasHost = targetParticipant.isHost();
+
+        gameParticipantRepository.delete(targetParticipant);
+        gameRoom.getParticipants().remove(targetParticipant); // 컬렉션에서도 동기화
+
+        // 방에 사람없으면 삭제
+        if (gameRoom.getParticipants().isEmpty()) {
+            gameRoomRepository.delete(gameRoom);
+            return;
+        }
+
+        //방장퇴장하면 남은사람한테 위임
+        if (wasHost && !gameRoom.getParticipants().isEmpty()) {
+            GameParticipant newHost = gameRoom.getParticipants().get(0); // 첫 번째 남은 사람
+            newHost.updateHost(true);
+        }
     }
 
     @Override

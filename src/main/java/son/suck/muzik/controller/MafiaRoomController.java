@@ -50,4 +50,11 @@ public class MafiaRoomController {
         mafiaRoomService.joinRoom(roomId, userId);
         return ResponseEntity.ok().build();
     }
+    //방퇴장
+    @DeleteMapping("/{roomId}/leave")
+    public ResponseEntity<Void> leaveRoom(@PathVariable Long roomId,
+                                          @AuthenticationPrincipal(expression = "userId") Long userId) {
+        mafiaRoomService.leaveRoom(roomId, userId);
+        return ResponseEntity.ok().build();
+    }
 }
