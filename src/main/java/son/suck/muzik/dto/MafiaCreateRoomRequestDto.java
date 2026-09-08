@@ -2,9 +2,11 @@ package son.suck.muzik.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
+@Setter
 public class MafiaCreateRoomRequestDto {
 
     private String roomName;

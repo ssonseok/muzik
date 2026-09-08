@@ -57,4 +57,13 @@ public class MafiaRoomController {
         mafiaRoomService.leaveRoom(roomId, userId);
         return ResponseEntity.ok().build();
     }
+    //게임시작
+    @PostMapping("/{roomId}/start")
+    public ResponseEntity<Void> startGame(
+            @PathVariable Long roomId,
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
+
+        mafiaRoomService.startGame(roomId, userId);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -4,16 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import son.suck.muzik.domain.GameParticipant;
-import son.suck.muzik.domain.GameRoom;
-import son.suck.muzik.domain.RoomType;
-import son.suck.muzik.domain.Users;
+import son.suck.muzik.domain.*;
 import son.suck.muzik.dto.MafiaCreateRoomRequestDto;
 import son.suck.muzik.dto.MafiaRoomResponse;
 import son.suck.muzik.repository.GameParticipantRepository;
 import son.suck.muzik.repository.GameRoomRepository;
 import son.suck.muzik.repository.UsersRepository;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -124,7 +123,71 @@ public class MafiaRoomServiceImpl implements MafiaRoomService{
     }
 
     @Override
+    @Transactional
     public void startGame(Long roomId, Long hostUserId) {
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
+        boolean isHost = gameRoom.getParticipants().stream()
+                .anyMatch(p -> p.getUser().getId().equals(hostUserId) && p.isHost());
+
+        if (!isHost) {
+            throw new IllegalStateException("방장만 게임을 시작할 수 있습니다.");
+        }
+
+        if (!"WAITING".equals(gameRoom.getRoomStatus())) {
+            throw new IllegalStateException("이미 게임이 시작되었거나 대기 중이 아닌 방입니다.");
+        }
+
+        //일단 최
+        int totalPlayers = gameRoom.getParticipants().size();
+        if (totalPlayers < 4) {
+            throw new IllegalStateException("게임을 시작하려면 최소 4명의 인원이 필요합니다.");
+        }
+        if (totalPlayers > 12) {
+            throw new IllegalStateException("게임 최대 인원은 12명입니다.");
+        }
+
+        gameRoom.updateStatus("PLAYING");
+        gameRoom.updatePhase(GamePhase.NIGHT);
+
+        assignRolesToParticipants(gameRoom.getParticipants(), totalPlayers);
+    }
+
+    //역할 배분 헬퍼 메서드
+    private void assignRolesToParticipants(List<GameParticipant> participants, int totalPlayers) {
+        List<Mafia_Role> roles = new ArrayList<>();
+
+        //마피아 수 산정 (4~6명: 1명 / 7~10명: 2명 / 11~12명: 3명)
+        int mafiaCount = 1;
+        if (totalPlayers >= 7 && totalPlayers <= 10) {
+            mafiaCount = 2;
+        } else if (totalPlayers >= 11) {
+            mafiaCount = 3;
+        }
+
+        for (int i = 0; i < mafiaCount; i++) {
+            roles.add(Mafia_Role.MAFIA);
+        }
+
+        roles.add(Mafia_Role.POLICE);
+
+        if (totalPlayers >= 5) {
+            roles.add(Mafia_Role.DOCTOR);
+        }
+
+        if (totalPlayers >= 6) {
+            roles.add(Mafia_Role.SOLDIER);
+        }
+
+        while (roles.size() < totalPlayers) {
+            roles.add(Mafia_Role.CITIZEN);
+        }
+
+        Collections.shuffle(roles);
+
+        for (int i = 0; i < totalPlayers; i++) {
+            participants.get(i).assignRole(roles.get(i));
+        }
     }
 }
