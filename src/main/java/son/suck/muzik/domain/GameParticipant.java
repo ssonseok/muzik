@@ -35,6 +35,9 @@ public class GameParticipant {
     @Column(nullable = false)
     private boolean isAlive = true;
 
+    @Column(nullable = false)
+    private boolean isSoldierShieldUsed = false;
+
     @Builder
     public GameParticipant(Users user, GameRoom gameRoom, boolean isHost) {
         this.user = user;
@@ -42,6 +45,7 @@ public class GameParticipant {
         this.isHost = isHost;
         this.currentScore = 0;
         this.isAlive = true;
+        this.isSoldierShieldUsed = false;
     }
 
     public void assignRole(Mafia_Role role) {
@@ -64,5 +68,9 @@ public class GameParticipant {
     // 다음 판 시작할 때 점수 초기화용 메서드
     public void resetScore() {
         this.currentScore = 0;
+    }
+
+    public void useSoldierShield() {
+        this.isSoldierShieldUsed = true;
     }
 }

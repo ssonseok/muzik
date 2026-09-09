@@ -15,16 +15,19 @@ public class MafiaRoomResponse {
     private RoomType roomType; // MAFIA
 
     private int nightTime = 25;//밤
-    private int discussionTime = 50;//낮
-    private int votingTime = 20;//투표
+    private int discussionTime;
+    private int votingTime;
     private int defenseTime = 15;//최후반론
 
     public MafiaRoomResponse(GameRoom gameRoom) {
         this.roomId = gameRoom.getId();
         this.roomName = gameRoom.getRoomName();
-        this.currentPlayers = gameRoom.getParticipants().size();
+        int players = gameRoom.getParticipants().size();
+        this.currentPlayers = players;
         this.maxPlayers = gameRoom.getMaxPlayers();
         this.roomStatus = gameRoom.getRoomStatus();
         this.roomType = gameRoom.getRoomType();
+        this.discussionTime = 30 + (players * 5);
+        this.votingTime = 15 + (players * 2);
     }
 }
