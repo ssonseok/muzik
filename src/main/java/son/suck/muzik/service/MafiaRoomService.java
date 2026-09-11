@@ -1,5 +1,6 @@
 package son.suck.muzik.service;
 
+import son.suck.muzik.domain.GamePhase;
 import son.suck.muzik.dto.MafiaCreateRoomRequestDto;
 import son.suck.muzik.dto.MafiaRoomResponse;
 
@@ -11,4 +12,5 @@ public interface MafiaRoomService {
     void joinRoom(Long roomId, Long userId);
     void leaveRoom(Long roomId, Long userId);
     void startGame(Long roomId, Long hostUserId);
+    void updateRoomPhase(Long roomId, GamePhase phase);
 }

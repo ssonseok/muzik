@@ -2,11 +2,13 @@ package son.suck.muzik.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import son.suck.muzik.domain.*;
 import son.suck.muzik.dto.MafiaCreateRoomRequestDto;
 import son.suck.muzik.dto.MafiaRoomResponse;
+import son.suck.muzik.dto.MafiaStartEventDto;
 import son.suck.muzik.repository.GameParticipantRepository;
 import son.suck.muzik.repository.GameRoomRepository;
 import son.suck.muzik.repository.UsersRepository;
@@ -23,6 +25,7 @@ public class MafiaRoomServiceImpl implements MafiaRoomService{
     private final GameRoomRepository gameRoomRepository;
     private final GameParticipantRepository gameParticipantRepository;
     private final UsersRepository usersRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -152,6 +155,7 @@ public class MafiaRoomServiceImpl implements MafiaRoomService{
         gameRoom.updatePhase(GamePhase.NIGHT);
 
         assignRolesToParticipants(gameRoom.getParticipants(), totalPlayers);
+        eventPublisher.publishEvent(new MafiaStartEventDto(roomId, totalPlayers));
     }
 
     //역할 배분 헬퍼 메서드
@@ -189,5 +193,13 @@ public class MafiaRoomServiceImpl implements MafiaRoomService{
         for (int i = 0; i < totalPlayers; i++) {
             participants.get(i).assignRole(roles.get(i));
         }
+    }
+
+    @Override
+    @Transactional
+    public void updateRoomPhase(Long roomId, GamePhase phase) {
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
+        gameRoom.updatePhase(phase);
     }
 }
