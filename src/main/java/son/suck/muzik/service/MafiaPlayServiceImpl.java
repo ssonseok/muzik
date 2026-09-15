@@ -50,11 +50,22 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         Long roomId = request.getRoomId();
         MafiaNightActionRequestDto.ActionType actionType = request.getActionType();
 
-        GameParticipant participant = gameParticipantRepository.findByGameRoomIdAndUserId(roomId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 방의 참여자 정보를 찾을 수 없습니다. User ID: " + userId));
+        GameRoom room = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "해당 게임방을 찾을 수 없습니다. Room ID: " + roomId));
+
+        if (room.getGamePhase() != GamePhase.NIGHT) {
+            throw new IllegalStateException("현재는 밤 페이즈가 아닙니다.");
+        }
+
+        GameParticipant participant = gameParticipantRepository
+                .findByGameRoomIdAndUserId(roomId, userId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "해당 방의 참여자 정보를 찾을 수 없습니다. User ID: " + userId));
 
         if (!participant.isAlive()) {
-            throw new IllegalStateException("사망한 유저는 밤 행동을 수행할 수 없습니다.");
+            throw new IllegalStateException(
+                    "사망한 유저는 밤 행동을 수행할 수 없습니다.");
         }
 
         Mafia_Role role = participant.getMafiaRole();
@@ -66,7 +77,9 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         };
 
         if (!isMatched) {
-            throw new IllegalArgumentException("해당 직업은 이 밤 행동을 수행할 수 없습니다. 요청 액션: " + actionType + ", 현재 직업: " + role);
+            throw new IllegalArgumentException(
+                    "해당 직업은 이 밤 행동을 수행할 수 없습니다. 요청 액션: "
+                            + actionType + ", 현재 직업: " + role);
         }
     }
 
@@ -81,12 +94,12 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
     @Override
     @Transactional
-    public void calculateNightResult(Long roomId) {
+    public boolean calculateNightResult(Long roomId) {
         ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions = nightActionStore.get(roomId);
 
         if (roomActions == null || roomActions.isEmpty()) {
             nightActionStore.remove(roomId);
-            return;
+            return false;
         }
 
         Long mafiaTargetId = determineMafiaTarget(roomActions);
@@ -95,8 +108,11 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         processPoliceInvestigation(roomActions);
         applyFinalSurvivalResult(roomId, mafiaTargetId, doctorTargetId);
 
-        checkGameEndCondition(roomId);
+        boolean gameEnded = checkGameEndCondition(roomId);
+
         nightActionStore.remove(roomId);
+
+        return gameEnded;
     }
 
     private Long determineMafiaTarget(ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions) {
@@ -226,14 +242,17 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
     }
 
     @Override
-    public void calculateDayResult(Long roomId) {
+    public boolean calculateDayResult(Long roomId) {
         GameRoom room = findRoom(roomId);
 
         if (room.getGamePhase() == GamePhase.VOTE) {
             processNominationResult(roomId);
+            return false;
         } else if (room.getGamePhase() == GamePhase.DEFENSE) {
-            processDefenseResult(roomId);
+            return processDefenseResult(roomId);
         }
+
+        return false;
     }
 
     @Override
@@ -269,6 +288,12 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
             room.updateStatus("end");
             room.updatePhase(GamePhase.END);
             gameRoomRepository.save(room);
+
+            messagingTemplate.convertAndSend(
+                    "/sub/room/" + roomId + "/game-end",
+                    Map.of("gamePhase", GamePhase.END)
+            );
+
             return true;
         }
 
@@ -323,13 +348,13 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         log.info("방 [{}] 1차 투표 결과 최다 득표자 선정: ID [{}] ({}표)", roomId, electedTargetId, maxVotes);
     }
 
-    private void processDefenseResult(Long roomId) {
+    private boolean processDefenseResult(Long roomId) {
         ConcurrentHashMap<Long, Boolean> roomDefenseVotes = defenseVotes.remove(roomId);
         Long targetId = executionTargets.remove(roomId);
 
         if (targetId == null) {
             log.info("방 [{}]에 처형 후보자가 없습니다.", roomId);
-            return;
+            return false;
         }
 
         int agreeCount = 0;
@@ -359,7 +384,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
             log.info("방 [{}] 투표 결과: 무죄 방면. 과반수 찬성을 얻지 못해 아무도 처형되지 않습니다.", roomId);
         }
 
-        checkGameEndCondition(roomId);
+        return checkGameEndCondition(roomId);
     }
 
     private GameRoom findRoom(Long roomId) {

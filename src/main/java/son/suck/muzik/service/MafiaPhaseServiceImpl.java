@@ -49,8 +49,11 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
         changePhaseAndBroadcast(roomId, GamePhase.NIGHT);
 
         scheduleNextPhase(roomId, 30, () -> {
-            mafiaPlayService.calculateNightResult(roomId);
-            startDayPhase(roomId, participantCount);
+            boolean gameEnded = mafiaPlayService.calculateNightResult(roomId);
+
+            if (!gameEnded) {
+                startDayPhase(roomId, participantCount);
+            }
         });
     }
 
@@ -81,7 +84,11 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
         int duration = 15;
 
         scheduleNextPhase(roomId, duration, () -> {
-            startNightPhase(roomId, participantCount);
+            boolean gameEnded = mafiaPlayService.calculateDayResult(roomId);
+
+            if (!gameEnded) {
+                startNightPhase(roomId, participantCount);
+            }
         });
     }
 
