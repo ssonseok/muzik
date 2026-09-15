@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MafiaNightActionRequestDto {
     private Long roomId;
-    private Long userId;
+    //private Long userId;
     private Long targetId;
     private ActionType actionType;
 

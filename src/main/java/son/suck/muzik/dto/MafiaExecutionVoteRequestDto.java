@@ -5,9 +5,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class MafiaVoteRequestDto {
-
+public class MafiaExecutionVoteRequestDto {
     private Long roomId;
     //private Long voterId;
-    private Long targetId;
+    private boolean agree; // true: 찬성(처형), false: 반대(생존)
 }
