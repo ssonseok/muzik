@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import son.suck.muzik.config.JwtTokenProvider;
 import son.suck.muzik.config.UserPrincipal;
 import son.suck.muzik.dto.MafiaCreateRoomRequestDto;
+import son.suck.muzik.dto.MafiaMyInfoResponse;
 import son.suck.muzik.dto.MafiaRoomResponse;
 import son.suck.muzik.service.MafiaRoomService;
 
@@ -66,4 +67,14 @@ public class MafiaRoomController {
         mafiaRoomService.startGame(roomId, userId);
         return ResponseEntity.ok().build();
     }
+    // 내 직업 및 방 상태 조회
+    @GetMapping("/{roomId}/my-info")
+    public ResponseEntity<MafiaMyInfoResponse> getMyInfo(
+            @PathVariable Long roomId,
+            @AuthenticationPrincipal(expression = "userId") Long userId
+    ) {
+        MafiaMyInfoResponse response = mafiaRoomService.getMyInfo(roomId, userId);
+        return ResponseEntity.ok(response);
+    }
+
 }
