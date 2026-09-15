@@ -37,7 +37,11 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
 
     private void changePhaseAndBroadcast(Long roomId, GamePhase phase) {
         mafiaRoomService.updateRoomPhase(roomId, phase);
-        messagingTemplate.convertAndSend("/sub/room/{roomId}/phase", Map.of("phase", phase));
+
+        messagingTemplate.convertAndSend(
+                "/sub/room/" + roomId + "/phase",
+                Map.of("phase", phase)
+        );
     }
 
     @Override

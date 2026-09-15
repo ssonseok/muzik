@@ -47,9 +47,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
                         String token = bearerToken.substring(7);
 
-                        Long userId = jwtTokenProvider.getUserId(token);
-                        if (accessor.getSessionAttributes() != null) {
-                            accessor.getSessionAttributes().put("userId", userId);
+                        if (jwtTokenProvider.validateToken(token)) {
+                            Long userId = jwtTokenProvider.getUserId(token);
+
+                            if (accessor.getSessionAttributes() != null) {
+                                accessor.getSessionAttributes().put("userId", userId);
+                            }
                         }
                     }
                 }
