@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>MAFIA GAME - 대기실</title>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>MAFIA GAME</h1>
+    </div>
+
+    <div>
+        <span>
+            <b id="myInfo">불러오는 중...</b>님 환영합니다!
+        </span>
+
+        <button type="button" id="logoutBtn">로그아웃</button>
+    </div>
+</header>
+
+
+<main>
+
+    <div>
+        <h2>ROOMS</h2>
+
+        <div>
+            <button type="button" id="refreshBtn">
+                새로고침
+            </button>
+
+            <button type="button" id="createRoomBtn">
+                + 방 만들기
+            </button>
+        </div>
+    </div>
+
+
+    <!-- 방 목록 -->
+    <table>
+        <thead>
+        <tr>
+            <th>NO</th>
+            <th>방 제목</th>
+            <th>인원</th>
+            <th>상태</th>
+            <th>입장</th>
+        </tr>
+        </thead>
+
+        <tbody id="roomListTable">
+        <tr>
+            <td colspan="5">
+                방 목록을 불러오는 중...
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</main>
+
+
+<!-- 방 생성 모달 -->
+<div id="createRoomModal" style="display: none;">
+
+    <div>
+
+        <h2>마피아 게임방 만들기</h2>
+
+        <form id="createRoomForm">
+
+            <div>
+                <label for="roomName">방 제목</label>
+
+                <input
+                        type="text"
+                        id="roomName"
+                        placeholder="방 제목을 입력하세요."
+                        maxlength="30"
+                        required>
+            </div>
+
+
+            <div>
+                <label for="maxPlayers">최대 인원</label>
+
+                <select id="maxPlayers">
+                    <option value="4">4명</option>
+                    <option value="5">5명</option>
+                    <option value="6">6명</option>
+                    <option value="7">7명</option>
+                    <option value="8">8명</option>
+                    <option value="9">9명</option>
+                    <option value="10">10명</option>
+                    <option value="11">11명</option>
+                    <option value="12">12명</option>
+                </select>
+            </div>
+
+
+            <div>
+                <button
+                        type="button"
+                        id="cancelCreateBtn">
+                    취소
+                </button>
+
+                <button type="submit">
+                    방 만들기
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="config.js"></script>
+<script src="mafiaGame.js"></script>
+
+</body>
+</html>
