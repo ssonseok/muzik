@@ -264,7 +264,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
         defenseVotes
                 .computeIfAbsent(roomId, k -> new ConcurrentHashMap<>())
-                .put(userId, isAgree); // voterId 자리에 userId 사용
+                .put(userId, isAgree);
     }
 
     @Override
@@ -367,6 +367,15 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
         if (isTie || electedTargetId == null) {
             log.info("방 [{}] 최다 득표자 동률 발생 또는 표 없음.", roomId);
+
+            messagingTemplate.convertAndSend(
+                    "/sub/room/" + roomId + "/game",
+                    Map.of(
+                            "type", "VOTE_TIE",
+                            "message", "투표 결과 동률입니다. 아무도 처형되지 않습니다."
+                    )
+            );
+
             return;
         }
 
