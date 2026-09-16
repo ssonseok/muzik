@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>MAFIA GAME - 게임방</title>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>MAFIA GAME</h1>
+    </div>
+
+    <div>
+        <span>
+            <b id="myNickname">불러오는 중...</b>
+        </span>
+
+        <button type="button" id="leaveRoomBtn">방 나가기</button>
+    </div>
+</header>
+
+
+<main>
+
+    <!-- =========================
+         방 정보
+    ========================== -->
+
+    <section>
+        <h2 id="roomName">방 정보</h2>
+
+        <div>
+            <span>현재 인원 : </span>
+            <b id="playerCount">-</b>
+        </div>
+
+        <div>
+            <span>현재 단계 : </span>
+            <b id="gamePhase">WAITING</b>
+        </div>
+
+        <div>
+            <span>남은 시간 : </span>
+            <b id="timer">-</b>
+        </div>
+    </section>
+
+
+    <!-- =========================
+         참가자 목록
+    ========================== -->
+
+    <section>
+        <h2>PLAYER</h2>
+
+        <ul id="playerList">
+            <li>참가자를 불러오는 중...</li>
+        </ul>
+    </section>
+
+
+    <!-- =========================
+         내 정보
+    ========================== -->
+
+    <section>
+        <h2>MY INFO</h2>
+
+        <div>
+            <span>닉네임 : </span>
+            <b id="myInfoNickname">-</b>
+        </div>
+
+        <div>
+            <span>생존 상태 : </span>
+            <b id="myAliveStatus">-</b>
+        </div>
+
+        <div>
+            <span>직업 : </span>
+            <b id="myRole">게임 시작 후 공개</b>
+        </div>
+    </section>
+
+
+    <!-- =========================
+         게임 영역
+    ========================== -->
+
+    <section id="gameArea">
+
+        <!-- NIGHT -->
+        <div id="nightArea" style="display: none;">
+
+            <h2>🌙 NIGHT</h2>
+
+            <p>
+                밤입니다. 자신의 역할에 따라 행동을 선택하세요.
+            </p>
+
+            <div id="nightTargetArea">
+                <!-- JS에서 대상 버튼 생성 -->
+            </div>
+
+            <button type="button" id="nightActionBtn">
+                행동 선택
+            </button>
+
+        </div>
+
+
+        <!-- DAY -->
+        <div id="dayArea" style="display: none;">
+
+            <h2>☀️ DAY</h2>
+
+            <p>
+                토론 시간입니다.
+            </p>
+
+        </div>
+
+
+        <!-- VOTE -->
+        <div id="voteArea" style="display: none;">
+
+            <h2>🗳 VOTE</h2>
+
+            <p>
+                처형할 플레이어를 지목하세요.
+            </p>
+
+            <div id="voteTargetArea">
+                <!-- JS에서 대상 버튼 생성 -->
+            </div>
+
+            <button type="button" id="voteBtn">
+                투표하기
+            </button>
+
+        </div>
+
+
+        <!-- DEFENSE -->
+        <div id="defenseArea" style="display: none;">
+
+            <h2>⚖ DEFENSE</h2>
+
+            <p>
+                해당 플레이어를 처형하시겠습니까?
+            </p>
+
+            <div>
+                <button type="button" id="defenseAgreeBtn">
+                    찬성
+                </button>
+
+                <button type="button" id="defenseDisagreeBtn">
+                    반대
+                </button>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         게임 메시지
+    ========================== -->
+
+    <section>
+        <h2>GAME MESSAGE</h2>
+
+        <div id="gameMessage">
+            게임 메시지가 표시됩니다.
+        </div>
+    </section>
+
+
+    <!-- =========================
+         채팅
+    ========================== -->
+
+    <section>
+        <h2>CHAT</h2>
+
+        <div id="chatMessages">
+            <!-- 채팅 메시지 -->
+        </div>
+
+        <div>
+            <input
+                    type="text"
+                    id="chatInput"
+                    placeholder="메시지를 입력하세요."
+            >
+
+            <button type="button" id="chatSendBtn">
+                전송
+            </button>
+        </div>
+    </section>
+
+
+    <!-- =========================
+         방장 전용
+    ========================== -->
+
+    <section id="hostArea" style="display: none;">
+
+        <h2>HOST</h2>
+
+        <button type="button" id="startGameBtn">
+            게임 시작
+        </button>
+
+    </section>
+
+</main>
+
+
+<script src="config.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script src="mafiaRoom.js"></script>
+
+</body>
+</html>
