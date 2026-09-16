@@ -48,6 +48,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
     private void validateNightAction(Long userId, MafiaNightActionRequestDto request) {
         Long roomId = request.getRoomId();
+        Long targetId = request.getTargetId();
         MafiaNightActionRequestDto.ActionType actionType = request.getActionType();
 
         GameRoom room = gameRoomRepository.findById(roomId)
@@ -66,6 +67,18 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         if (!participant.isAlive()) {
             throw new IllegalStateException(
                     "사망한 유저는 밤 행동을 수행할 수 없습니다.");
+        }
+
+        GameParticipant target = gameParticipantRepository.findById(targetId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "행동 대상 참가자를 찾을 수 없습니다. Target ID: " + targetId));
+
+        if (!target.getGameRoom().getId().equals(roomId)) {
+            throw new IllegalArgumentException("해당 방의 참가자가 아닙니다.");
+        }
+
+        if (!target.isAlive()) {
+            throw new IllegalStateException("사망한 참가자는 행동 대상으로 지정할 수 없습니다.");
         }
 
         Mafia_Role role = participant.getMafiaRole();
@@ -197,6 +210,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
     @Override
     public void processNominationVote(Long userId, MafiaVoteRequestDto request) {
         GameRoom room = findRoom(request.getRoomId());
+
         if (room.getGamePhase() != GamePhase.VOTE) {
             throw new IllegalStateException("지금은 1차 지목 투표 페이즈가 아닙니다.");
         }
@@ -204,10 +218,22 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         Long roomId = request.getRoomId();
         Long targetId = request.getTargetId();
 
-        GameParticipant voter = gameParticipantRepository.findByGameRoomIdAndUserId(roomId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("투표자를 찾을 수 없습니다: " + userId));
+        GameParticipant voter = gameParticipantRepository
+                .findByGameRoomIdAndUserId(roomId, userId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("투표자를 찾을 수 없습니다: " + userId));
+
         GameParticipant target = gameParticipantRepository.findById(targetId)
-                .orElseThrow(() -> new IllegalArgumentException("지목된 대상을 찾을 수 없습니다: " + targetId));
+                .orElseThrow(() ->
+                        new IllegalArgumentException("지목된 대상을 찾을 수 없습니다: " + targetId));
+
+        if (!target.getGameRoom().getId().equals(roomId)) {
+            throw new IllegalArgumentException("해당 방의 참가자가 아닙니다.");
+        }
+
+        if (!target.isAlive()) {
+            throw new IllegalStateException("이미 사망한 참가자는 지목할 수 없습니다.");
+        }
 
         if (!voter.isAlive()) {
             throw new IllegalStateException("사망자는 투표할 수 없습니다.");
@@ -215,7 +241,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
         nominationVotes
                 .computeIfAbsent(roomId, k -> new ConcurrentHashMap<>())
-                .put(userId, targetId); // voterId 자리에 userId 사용
+                .put(userId, targetId);
     }
 
     @Override
