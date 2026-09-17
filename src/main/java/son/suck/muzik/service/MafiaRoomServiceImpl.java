@@ -3,6 +3,7 @@ package son.suck.muzik.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import son.suck.muzik.domain.*;
@@ -24,6 +25,7 @@ public class MafiaRoomServiceImpl implements MafiaRoomService {
     private final GameParticipantRepository gameParticipantRepository;
     private final UsersRepository usersRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     @Transactional
@@ -92,6 +94,11 @@ public class MafiaRoomServiceImpl implements MafiaRoomService {
                 .build();
 
         gameParticipantRepository.save(participant);
+
+        messagingTemplate.convertAndSend(
+                "/sub/room/" + roomId + "/participants",
+                "UPDATE"
+        );
     }
 
     @Override
@@ -121,6 +128,11 @@ public class MafiaRoomServiceImpl implements MafiaRoomService {
             GameParticipant newHost = gameRoom.getParticipants().get(0); // 첫 번째 남은 사람
             newHost.updateHost(true);
         }
+
+        messagingTemplate.convertAndSend(
+                "/sub/room/" + roomId + "/participants",
+                "UPDATE"
+        );
     }
 
     @Override

@@ -258,6 +258,19 @@ function subscribeRoom() {
             handlePhase(data);
         }
     );
+        // ============================
+        // Participants
+        // ============================
+
+        stompClient.subscribe(
+            `/sub/room/${roomId}/participants`,
+            function (message) {
+
+                console.log('참가자 변경:', message.body);
+
+                loadParticipants();
+            }
+        );
 
 
     // ============================
