@@ -4,4 +4,5 @@ import son.suck.muzik.dto.MafiaChatMessageDto;
 
 public interface MafiaChatService {
     void sendMafiaChat(Long roomId, Long userId, MafiaChatMessageDto message);
+    void sendGeneralChat(Long roomId, Long userId, MafiaChatMessageDto message);
 }

@@ -321,14 +321,8 @@ function handleChatMessage(data) {
 
     const messageElement = document.createElement('div');
 
-    const nickname =
-        data.nickname || data.sender || '알 수 없음';
-
-    const content =
-        data.message || data.content || '';
-
     messageElement.textContent =
-        `${nickname} : ${content}`;
+        `${data.senderName} : ${data.message}`;
 
     chatMessages.appendChild(messageElement);
 

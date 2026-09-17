@@ -3,6 +3,7 @@ package son.suck.muzik.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import son.suck.muzik.domain.GameParticipant;
 import son.suck.muzik.domain.Mafia_Role;
 import son.suck.muzik.dto.MafiaChatMessageDto;
@@ -16,6 +17,28 @@ public class MafiaChatServiceImpl implements MafiaChatService {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
+    @Transactional
+    public void sendGeneralChat(
+            Long roomId,
+            Long userId,
+            MafiaChatMessageDto message) {
+        GameParticipant participant =
+                gameParticipantRepository
+                        .findByGameRoomIdAndUserId(roomId, userId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException( "게임방 참가자가 아닙니다." ));
+        if (!participant.isAlive()) {
+            throw new IllegalStateException(
+                    "죽은 유저는 채팅을 사용할 수 없습니다." );
+        }
+        message.setRoomId(roomId);
+        message.setSenderId(userId);
+        message.setSenderName( participant.getUser().getNickname() );
+        messagingTemplate.convertAndSend( "/sub/room/" + roomId + "/chat", message );
+    }
+
+    @Override
+    @Transactional
     public void sendMafiaChat(
             Long roomId,
             Long userId,
@@ -38,6 +61,9 @@ public class MafiaChatServiceImpl implements MafiaChatService {
             throw new IllegalStateException(
                     "마피아만 사용할 수 있는 채팅입니다.");
         }
+        message.setRoomId(roomId);
+        message.setSenderId(userId);
+        message.setSenderName( participant.getUser().getNickname() );
 
         messagingTemplate.convertAndSend(
                 "/sub/room/" + roomId + "/mafia-chat",

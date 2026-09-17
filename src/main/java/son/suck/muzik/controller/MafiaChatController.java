@@ -21,25 +21,33 @@ public class MafiaChatController {
     private final SimpMessagingTemplate messagingTemplate;
 
     /**
-     * 낮 전체 채팅 (누구나 참여 가능)
-     * 프론트 구독 경로: /sub/room/{roomId}/chat
-     * 프론트 전송 경로: /pub/room/{roomId}/chat
+     * 낮 전체 채팅
      */
     @MessageMapping("/room/{roomId}/chat")
     public void sendGeneralChat(
             @DestinationVariable Long roomId,
-            MafiaChatMessageDto message) {
+            MafiaChatMessageDto message,
+            SimpMessageHeaderAccessor accessor) {
 
-        messagingTemplate.convertAndSend(
-                "/sub/room/" + roomId + "/chat",
+        Map<String, Object> sessionAttributes =
+                accessor.getSessionAttributes();
+
+        if (sessionAttributes == null ||
+                sessionAttributes.get("userId") == null) {
+            throw new IllegalStateException("로그인이 필요합니다.");
+        }
+
+        Long userId = (Long) sessionAttributes.get("userId");
+
+        mafiaChatService.sendGeneralChat(
+                roomId,
+                userId,
                 message
         );
     }
 
     /**
-     * 마피아 전용 밤 비밀 채팅 (마피아만 참여 가능)
-     * 프론트 구독 경로: /sub/room/{roomId}/mafia-chat
-     * 프론트 전송 경로: /pub/room/{roomId}/mafia-chat
+     * 마피아 전용 밤 비밀 채팅
      */
     @MessageMapping("/room/{roomId}/mafia-chat")
     public void sendMafiaChat(
