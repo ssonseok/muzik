@@ -6,10 +6,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import son.suck.muzik.domain.*;
-import son.suck.muzik.dto.MafiaCreateRoomRequestDto;
-import son.suck.muzik.dto.MafiaMyInfoResponse;
-import son.suck.muzik.dto.MafiaRoomResponse;
-import son.suck.muzik.dto.MafiaStartEventDto;
+import son.suck.muzik.dto.*;
 import son.suck.muzik.repository.GameParticipantRepository;
 import son.suck.muzik.repository.GameRoomRepository;
 import son.suck.muzik.repository.UsersRepository;
@@ -217,5 +214,22 @@ public class MafiaRoomServiceImpl implements MafiaRoomService {
                 participant.isHost(),
                 participant.getGameRoom().getGamePhase()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MafiaParticipantResponse> getParticipants(Long roomId) {
+
+        List<GameParticipant> participants =
+                gameParticipantRepository.findByGameRoomId(roomId);
+
+        return participants.stream()
+                .map(participant -> new MafiaParticipantResponse(
+                        participant.getId(),
+                        participant.getUser().getNickname(),
+                        participant.isAlive(),
+                        participant.isHost()
+                ))
+                .toList();
     }
 }

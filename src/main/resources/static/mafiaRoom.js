@@ -108,6 +108,63 @@ async function loadMyInfo() {
             '내 정보를 불러오지 못했습니다.';
     }
 }
+async function loadParticipants() {
+
+    try {
+
+        const response = await fetch(
+            `${ROOMS_API}/${roomId}/participants`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            }
+        );
+
+        if (response.status === 401) {
+            alert('로그인이 만료되었습니다.');
+            localStorage.removeItem('accessToken');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('참가자 목록 조회 실패');
+        }
+
+        const participants = await response.json();
+
+        console.log('참가자 목록:', participants);
+
+        renderParticipants(participants);
+
+    } catch (error) {
+
+        console.error('참가자 목록 조회 실패:', error);
+
+        gameMessage.textContent =
+            '참가자 목록을 불러오지 못했습니다.';
+    }
+}
+function renderParticipants(participants) {
+
+    playerList.innerHTML = '';
+
+    playerCount.textContent =
+        `${participants.length}명`;
+
+    participants.forEach(participant => {
+
+        const playerElement =
+            document.createElement('div');
+
+        playerElement.textContent =
+            `${participant.nickname}${participant.host ? ' 👑' : ''}`;
+
+        playerList.appendChild(playerElement);
+    });
+}
 
 
 // ================================
@@ -508,4 +565,5 @@ chatInput.addEventListener(
 // ================================
 
 loadMyInfo();
+loadParticipants();
 connectWebSocket();

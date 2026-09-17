@@ -11,6 +11,7 @@ import son.suck.muzik.config.JwtTokenProvider;
 import son.suck.muzik.config.UserPrincipal;
 import son.suck.muzik.dto.MafiaCreateRoomRequestDto;
 import son.suck.muzik.dto.MafiaMyInfoResponse;
+import son.suck.muzik.dto.MafiaParticipantResponse;
 import son.suck.muzik.dto.MafiaRoomResponse;
 import son.suck.muzik.service.MafiaRoomService;
 
@@ -75,6 +76,17 @@ public class MafiaRoomController {
     ) {
         MafiaMyInfoResponse response = mafiaRoomService.getMyInfo(roomId, userId);
         return ResponseEntity.ok(response);
+    }
+
+    //게임방 유저들
+    @GetMapping("/{roomId}/participants")
+    public ResponseEntity<List<MafiaParticipantResponse>> getParticipants(
+            @PathVariable Long roomId) {
+
+        List<MafiaParticipantResponse> participants =
+                mafiaRoomService.getParticipants(roomId);
+
+        return ResponseEntity.ok(participants);
     }
 
 }
