@@ -108,20 +108,63 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
     @Override
     @Transactional
     public boolean calculateNightResult(Long roomId) {
-        ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions = nightActionStore.get(roomId);
+
+        ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions =
+                nightActionStore.get(roomId);
 
         if (roomActions == null || roomActions.isEmpty()) {
             nightActionStore.remove(roomId);
             return false;
         }
 
-        Long mafiaTargetId = determineMafiaTarget(roomActions);
-        Long doctorTargetId = getDoctorTarget(roomActions);
+        Long mafiaTargetId =
+                determineMafiaTarget(roomActions);
+
+        Long doctorTargetId =
+                getDoctorTarget(roomActions);
 
         processPoliceInvestigation(roomActions);
-        applyFinalSurvivalResult(roomId, mafiaTargetId, doctorTargetId);
 
-        boolean gameEnded = checkGameEndCondition(roomId);
+        Long deadParticipantId =
+                applyFinalSurvivalResult(
+                        roomId,
+                        mafiaTargetId,
+                        doctorTargetId
+                );
+
+        // 밤 결과 전송
+        if (deadParticipantId != null) {
+
+            GameParticipant deadParticipant =
+                    gameParticipantRepository.findById(deadParticipantId)
+                            .orElse(null);
+
+            if (deadParticipant != null) {
+
+                messagingTemplate.convertAndSend(
+                        "/sub/room/" + roomId + "/game",
+                        Map.of(
+                                "type", "NIGHT_RESULT",
+                                "message",
+                                deadParticipant.getUser().getNickname()
+                                        + "이(가) 밤에 사망했습니다."
+                        )
+                );
+            }
+
+        } else {
+
+            messagingTemplate.convertAndSend(
+                    "/sub/room/" + roomId + "/game",
+                    Map.of(
+                            "type", "NIGHT_RESULT",
+                            "message", "오늘 밤은 아무도 사망하지 않았습니다."
+                    )
+            );
+        }
+
+        boolean gameEnded =
+                checkGameEndCondition(roomId);
 
         nightActionStore.remove(roomId);
 
@@ -180,27 +223,39 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
                 });
     }
 
-    private void applyFinalSurvivalResult(Long roomId, Long mafiaTargetId, Long doctorTargetId) {
+    private Long applyFinalSurvivalResult(Long roomId, Long mafiaTargetId, Long doctorTargetId) {
         if (mafiaTargetId == null) {
-            return;
+            return null;
         }
 
         if (mafiaTargetId.equals(doctorTargetId)) {
-            return;
+            return null;
         }
 
-        GameParticipant targetParticipant = gameParticipantRepository.findByGameRoomIdAndUserId(roomId, mafiaTargetId)
-                .orElseThrow(() -> new IllegalArgumentException("마피아 타겟 참여자 정보를 찾을 수 없습니다."));
+        GameParticipant targetParticipant =
+                gameParticipantRepository.findById(mafiaTargetId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "마피아 타겟 참여자 정보를 찾을 수 없습니다."
+                                ));
+
+        if (!targetParticipant.getGameRoom().getId().equals(roomId)) {
+            throw new IllegalArgumentException(
+                    "해당 방의 참가자가 아닙니다."
+            );
+        }
 
         if (targetParticipant.getMafiaRole() == Mafia_Role.SOLDIER) {
             if (!targetParticipant.isSoldierShieldUsed()) {
                 targetParticipant.useSoldierShield();
-                return;
+                return null;
             }
         }
 
         targetParticipant.die();
         gameParticipantRepository.save(targetParticipant);
+
+        return targetParticipant.getId();
     }
 
     // ==================================================================

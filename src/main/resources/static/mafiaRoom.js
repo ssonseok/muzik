@@ -188,19 +188,24 @@ function startTimer(seconds) {
     }, 1000);
 }
 function renderParticipants(participants) {
-
     playerList.innerHTML = '';
-
-    playerCount.textContent =
-        `${participants.length}명`;
+    playerCount.textContent = `${participants.length}명`;
 
     participants.forEach(participant => {
 
-        const playerElement =
-            document.createElement('div');
+        const playerElement = document.createElement('div');
 
-        playerElement.textContent =
-            `${participant.nickname}${participant.host ? ' 👑' : ''}`;
+        let text = participant.nickname;
+
+        if (participant.host) {
+            text += ' (방장)';
+        }
+
+        if (!participant.alive) {
+            text += ' (사망)';
+        }
+
+        playerElement.textContent = text;
 
         playerList.appendChild(playerElement);
     });
@@ -575,6 +580,14 @@ function handleGameMessage(data) {
     }
 
     switch (data.type) {
+
+        case 'NIGHT_RESULT':
+            gameMessage.textContent =
+                data.message || '밤 결과가 발표되었습니다.';
+
+                loadParticipants();
+                loadMyInfo();
+            break;
 
         case 'VOTE_TIE':
             gameMessage.textContent =
