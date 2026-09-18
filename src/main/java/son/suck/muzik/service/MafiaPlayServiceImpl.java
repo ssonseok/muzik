@@ -232,7 +232,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
                         PoliceInvestigationResultResponseDto responseDto =
                                 new PoliceInvestigationResultResponseDto(targetId, targetNickname, isMafia);
 
-                        String destination = "/sub/room/" + action.getRoomId() + "/police/" + policeUserId;
+                        String destination = "/sub/room/" + action.getRoomId() + "/police";
 
                         messagingTemplate.convertAndSend(destination, responseDto);
 

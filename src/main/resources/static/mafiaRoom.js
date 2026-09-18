@@ -71,6 +71,7 @@ const mafiaChatInput =
 const mafiaChatSendBtn =
     document.getElementById('mafiaChatSendBtn');
 let mafiaChatSubscription = null;
+let policeSubscription = null;
 
 
 // ================================
@@ -230,10 +231,8 @@ function renderMyInfo(data) {
 
     if (data.mafiaRole === 'MAFIA') {
 
-        // 생존/사망 관계없이 마피아 채팅은 볼 수 있음
         mafiaChatArea.style.display = 'block';
 
-        // 아직 구독하지 않았다면 구독
         if (!mafiaChatSubscription &&
             stompClient &&
             stompClient.connected) {
@@ -255,17 +254,45 @@ function renderMyInfo(data) {
             );
         }
 
-        // 사망한 마피아는 보기만 가능
         mafiaChatInput.disabled = !data.alive;
         mafiaChatSendBtn.disabled = !data.alive;
 
     } else {
 
-        // 마피아가 아니면 마피아 채팅창 숨김
         mafiaChatArea.style.display = 'none';
 
         mafiaChatInput.disabled = false;
         mafiaChatSendBtn.disabled = false;
+    }
+
+    // ================================
+    // 경찰 조사 결과 구독
+    // ================================
+
+    if (data.mafiaRole === 'POLICE') {
+
+        if (!policeSubscription &&
+            stompClient &&
+            stompClient.connected) {
+
+            policeSubscription = stompClient.subscribe(
+                `/sub/room/${roomId}/police`,
+                function (message) {
+
+                    const policeData =
+                        JSON.parse(message.body);
+
+                    console.log(
+                        'Police Investigation:',
+                        policeData
+                    );
+
+                    handlePoliceInvestigationResult(
+                        policeData
+                    );
+                }
+            );
+        }
     }
 
     // ================================
@@ -297,6 +324,22 @@ function renderMyInfo(data) {
     }
 
     renderNightAction();
+}
+
+function handlePoliceInvestigationResult(data) {
+
+    if (!data) {
+        return;
+    }
+
+    const resultMessage =
+        data.isMafia
+            ? `${data.targetNickname}님은 마피아입니다.`
+            : `${data.targetNickname}님은 마피아가 아닙니다.`;
+
+    gameMessage.textContent = resultMessage;
+
+    console.log('경찰 조사 결과:', resultMessage);
 }
 
 function renderNightAction() {
@@ -463,7 +506,6 @@ function connectWebSocket() {
     );
 }
 
-
 // ================================
 // 방 구독
 // ================================
@@ -485,33 +527,21 @@ function subscribeRoom() {
             handlePhase(data);
         }
     );
-        // ============================
-        // Participants
-        // ============================
 
-        stompClient.subscribe(
-            `/sub/room/${roomId}/participants`,
-            function (message) {
+    // ============================
+    // Participants
+    // ============================
 
-                console.log('참가자 변경:', message.body);
+    stompClient.subscribe(
+        `/sub/room/${roomId}/participants`,
+        function (message) {
 
-                loadParticipants();
-                loadMyInfo();
-            }
-        );
+            console.log('참가자 변경:', message.body);
 
-        // Mafia Chat
-//            stompClient.subscribe(
-//                `/sub/room/${roomId}/mafia-chat`,
-//                function (message) {
-//
-//                    const data = JSON.parse(message.body);
-//
-//                    console.log('Mafia Chat:', data);
-//
-//                    handleMafiaChatMessage(data);
-//                }
-//            );
+            loadParticipants();
+            loadMyInfo();
+        }
+    );
 
     // ============================
     // Game
@@ -528,7 +558,6 @@ function subscribeRoom() {
             handleGameMessage(data);
         }
     );
-
 
     // ============================
     // Chat

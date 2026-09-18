@@ -49,57 +49,78 @@ public class MafiaWebSocketInterceptor
                 return message;
             }
 
-            // 마피아 채팅 구독인지 확인
-            if (destination.matches(
-                    "^/sub/room/\\d+/mafia-chat$")) {
-
-                // 로그인 확인
-                Map<String, Object> sessionAttributes =
-                        accessor.getSessionAttributes();
-
-                if (sessionAttributes == null ||
-                        sessionAttributes.get("userId") == null) {
-
-                    throw new IllegalStateException(
-                            "로그인이 필요합니다."
+            // 마피아 채팅 또는 경찰 조사 결과 채널인지 확인
+            boolean isMafiaChat =
+                    destination.matches(
+                            "^/sub/room/\\d+/mafia-chat$"
                     );
-                }
 
-                Long userId =
-                        (Long) sessionAttributes.get("userId");
-
-                // roomId 추출
-                String[] parts =
-                        destination.split("/");
-
-                Long roomId =
-                        Long.valueOf(parts[3]);
-
-                // 해당 방 참가자인지 확인
-                GameParticipant participant =
-                        gameParticipantRepository
-                                .findByGameRoomIdAndUserId(
-                                        roomId,
-                                        userId
-                                )
-                                .orElseThrow(() ->
-                                        new IllegalStateException(
-                                                "해당 게임방의 참가자가 아닙니다."
-                                        )
-                                );
-
-                // 마피아인지 확인
-                if (participant.getMafiaRole()
-                        != Mafia_Role.MAFIA) {
-
-                    throw new IllegalStateException(
-                            "마피아만 사용할 수 있는 채팅입니다."
+            boolean isPoliceChannel =
+                    destination.matches(
+                            "^/sub/room/\\d+/police$"
                     );
-                }
+
+            // 둘 다 아니면 검사하지 않음
+            if (!isMafiaChat && !isPoliceChannel) {
+                return message;
+            }
+
+            // 로그인 확인
+            Map<String, Object> sessionAttributes =
+                    accessor.getSessionAttributes();
+
+            if (sessionAttributes == null ||
+                    sessionAttributes.get("userId") == null) {
+
+                throw new IllegalStateException(
+                        "로그인이 필요합니다."
+                );
+            }
+
+            Long userId =
+                    (Long) sessionAttributes.get("userId");
+
+            // roomId 추출
+            String[] parts =
+                    destination.split("/");
+
+            Long roomId =
+                    Long.valueOf(parts[3]);
+
+            // 해당 방 참가자인지 확인
+            GameParticipant participant =
+                    gameParticipantRepository
+                            .findByGameRoomIdAndUserId(
+                                    roomId,
+                                    userId
+                            )
+                            .orElseThrow(() ->
+                                    new IllegalStateException(
+                                            "해당 게임방의 참가자가 아닙니다."
+                                    )
+                            );
+
+            // 마피아 채널이면 마피아만 허용
+            if (isMafiaChat &&
+                    participant.getMafiaRole()
+                            != Mafia_Role.MAFIA) {
+
+                throw new IllegalStateException(
+                        "마피아만 사용할 수 있는 채팅입니다."
+                );
+            }
+
+            // 경찰 채널이면 경찰만 허용
+            if (isPoliceChannel &&
+                    participant.getMafiaRole()
+                            != Mafia_Role.POLICE) {
+
+                throw new IllegalStateException(
+                        "경찰만 사용할 수 있는 채널입니다."
+                );
             }
         }
 
         return message;
     }
 }
-
