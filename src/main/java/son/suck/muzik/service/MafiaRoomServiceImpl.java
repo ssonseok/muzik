@@ -152,20 +152,26 @@ public class MafiaRoomServiceImpl implements MafiaRoomService {
             throw new IllegalStateException("이미 게임이 시작되었거나 대기 중이 아닌 방입니다.");
         }
 
-        //일단 최
         int totalPlayers = gameRoom.getParticipants().size();
+
         if (totalPlayers < 4) {
             throw new IllegalStateException("게임을 시작하려면 최소 4명의 인원이 필요합니다.");
         }
+
         if (totalPlayers > 12) {
             throw new IllegalStateException("게임 최대 인원은 12명입니다.");
         }
 
         gameRoom.updateStatus("PLAYING");
-        gameRoom.updatePhase(GamePhase.NIGHT);
 
-        assignRolesToParticipants(gameRoom.getParticipants(), totalPlayers);
-        eventPublisher.publishEvent(new MafiaStartEventDto(roomId, totalPlayers));
+        assignRolesToParticipants(
+                gameRoom.getParticipants(),
+                totalPlayers
+        );
+
+        eventPublisher.publishEvent(
+                new MafiaStartEventDto(roomId, totalPlayers)
+        );
     }
 
     //역할 배분 헬퍼 메서드

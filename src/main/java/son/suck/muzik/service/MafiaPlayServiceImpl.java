@@ -42,6 +42,12 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
     @Override
     public void processNightAction(Long userId, MafiaNightActionRequestDto request) {
+        System.out.println("🔥🔥 processNightAction 호출됨");
+        System.out.println("userId = " + userId);
+        System.out.println("roomId = " + request.getRoomId());
+        System.out.println("targetId = " + request.getTargetId());
+        System.out.println("actionType = " + request.getActionType());
+
         validateNightAction(userId, request);
         saveNightActionToStore(userId, request);
     }
@@ -98,19 +104,29 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
     private void saveNightActionToStore(Long userId, MafiaNightActionRequestDto request) {
         Long roomId = request.getRoomId();
+        System.out.println("🔥 밤 행동 저장 시도");
+        System.out.println("🔥 userId = " + userId);
+        System.out.println("🔥 roomId = " + roomId);
+        System.out.println("🔥 actionType = " + request.getActionType());
+        System.out.println("🔥 targetId = " + request.getTargetId());
 
         nightActionStore.putIfAbsent(roomId, new ConcurrentHashMap<>());
         ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions = nightActionStore.get(roomId);
 
         roomActions.put(userId, request);
+        System.out.println("🔥 저장 후 roomActions = " + roomActions);
     }
 
     @Override
     @Transactional
     public boolean calculateNightResult(Long roomId) {
+        System.out.println("🔥 calculateNightResult 호출됨! roomId = " + roomId);
 
         ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions =
                 nightActionStore.get(roomId);
+        System.out.println("🔥 roomActions = " + roomActions);
+        System.out.println("🔥 roomActions size = " +
+                (roomActions == null ? "null" : roomActions.size()));
 
         if (roomActions == null || roomActions.isEmpty()) {
             nightActionStore.remove(roomId);
@@ -119,9 +135,11 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
         Long mafiaTargetId =
                 determineMafiaTarget(roomActions);
+        System.out.println("🔥 mafiaTargetId = " + mafiaTargetId);
 
         Long doctorTargetId =
                 getDoctorTarget(roomActions);
+        System.out.println("🔥 doctorTargetId = " + doctorTargetId);
 
         processPoliceInvestigation(roomActions);
 
@@ -131,6 +149,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
                         mafiaTargetId,
                         doctorTargetId
                 );
+        System.out.println("🔥 deadParticipantId = " + deadParticipantId);
 
         // 밤 결과 전송
         if (deadParticipantId != null) {
@@ -224,6 +243,15 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
     }
 
     private Long applyFinalSurvivalResult(Long roomId, Long mafiaTargetId, Long doctorTargetId) {
+        System.out.println(
+                "🔥 applyFinalSurvivalResult 호출: mafiaTargetId="
+                        + mafiaTargetId
+                        + ", doctorTargetId="
+                        + doctorTargetId
+        );
+        System.out.println("🔥 최종 밤 결과");
+        System.out.println("mafiaTargetId = " + mafiaTargetId);
+        System.out.println("doctorTargetId = " + doctorTargetId);
         if (mafiaTargetId == null) {
             return null;
         }
@@ -253,6 +281,13 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         }
 
         targetParticipant.die();
+        System.out.println(
+                "🔥 사망 처리: participantId = "
+                        + targetParticipant.getId()
+                        + ", alive = "
+                        + targetParticipant.isAlive()
+        );
+
         gameParticipantRepository.save(targetParticipant);
 
         return targetParticipant.getId();

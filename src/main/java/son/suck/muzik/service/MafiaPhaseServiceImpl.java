@@ -32,7 +32,19 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
 
     @EventListener
     public void handleGameStarted(MafiaStartEventDto event) {
-        startNightPhase(event.getRoomId(), event.getTotalPlayers());
+        changePhaseAndBroadcast(
+                event.getRoomId(),
+                GamePhase.WAITING
+        );
+
+        scheduleNextPhase(
+                event.getRoomId(),
+                10,
+                () -> startNightPhase(
+                        event.getRoomId(),
+                        event.getTotalPlayers()
+                )
+        );
     }
 
     private void changePhaseAndBroadcast(Long roomId, GamePhase phase) {

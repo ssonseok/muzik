@@ -47,6 +47,7 @@ const voteArea = document.getElementById('voteArea');
 const defenseArea = document.getElementById('defenseArea');
 
 const nightTargetArea = document.getElementById('nightTargetArea');
+const nightActionBtn = document.getElementById('nightActionBtn');
 const voteTargetArea = document.getElementById('voteTargetArea');
 
 const chatMessages = document.getElementById('chatMessages');
@@ -69,6 +70,7 @@ const mafiaChatInput =
 
 const mafiaChatSendBtn =
     document.getElementById('mafiaChatSendBtn');
+let mafiaChatSubscription = null;
 
 
 // ================================
@@ -79,7 +81,6 @@ let stompClient = null;
 let timerInterval = null;
 let myRoleValue = null;
 let selectedTargetId = null;
-
 
 // ================================
 // 내 정보 조회
@@ -215,10 +216,7 @@ function renderParticipants(participants) {
 // ================================
 // 내 정보 출력
 // ================================
-
 function renderMyInfo(data) {
-
-    console.log('내 정보:', data);
 
     myNickname.textContent = data.nickname;
     myInfoNickname.textContent = data.nickname;
@@ -226,11 +224,53 @@ function renderMyInfo(data) {
 
     myRoleValue = data.mafiaRole;
 
-    if (data.mafiaRole === 'MAFIA' && data.alive) {
+    // ================================
+    // 마피아 채팅
+    // ================================
+
+    if (data.mafiaRole === 'MAFIA') {
+
+        // 생존/사망 관계없이 마피아 채팅은 볼 수 있음
         mafiaChatArea.style.display = 'block';
+
+        // 아직 구독하지 않았다면 구독
+        if (!mafiaChatSubscription &&
+            stompClient &&
+            stompClient.connected) {
+
+            mafiaChatSubscription = stompClient.subscribe(
+                `/sub/room/${roomId}/mafia-chat`,
+                function (message) {
+
+                    const chatData =
+                        JSON.parse(message.body);
+
+                    console.log(
+                        'Mafia Chat:',
+                        chatData
+                    );
+
+                    handleMafiaChatMessage(chatData);
+                }
+            );
+        }
+
+        // 사망한 마피아는 보기만 가능
+        mafiaChatInput.disabled = !data.alive;
+        mafiaChatSendBtn.disabled = !data.alive;
+
     } else {
+
+        // 마피아가 아니면 마피아 채팅창 숨김
         mafiaChatArea.style.display = 'none';
+
+        mafiaChatInput.disabled = false;
+        mafiaChatSendBtn.disabled = false;
     }
+
+    // ================================
+    // 역할 표시
+    // ================================
 
     if (data.mafiaRole) {
         myRole.textContent = data.mafiaRole;
@@ -238,17 +278,24 @@ function renderMyInfo(data) {
         myRole.textContent = '게임 시작 후 공개';
     }
 
+    // ================================
+    // 방장
+    // ================================
+
     if (data.host) {
         hostArea.style.display = 'block';
     } else {
         hostArea.style.display = 'none';
     }
 
+    // ================================
+    // 게임 단계
+    // ================================
+
     if (data.gamePhase) {
         gamePhase.textContent = data.gamePhase;
     }
 
-    // 밤 역할 UI 갱신
     renderNightAction();
 }
 
@@ -277,6 +324,8 @@ function renderNightAction() {
         nightActionBtn.style.display = 'none';
         return;
     }
+
+    nightActionBtn.style.display = 'block';
 
     switch (myRoleValue) {
 
@@ -452,18 +501,17 @@ function subscribeRoom() {
         );
 
         // Mafia Chat
-            stompClient.subscribe(
-                `/sub/room/${roomId}/mafia-chat`,
-                function (message) {
-
-                    const data = JSON.parse(message.body);
-
-                    console.log('Mafia Chat:', data);
-
-                    handleMafiaChatMessage(data);
-                }
-            );
-
+//            stompClient.subscribe(
+//                `/sub/room/${roomId}/mafia-chat`,
+//                function (message) {
+//
+//                    const data = JSON.parse(message.body);
+//
+//                    console.log('Mafia Chat:', data);
+//
+//                    handleMafiaChatMessage(data);
+//                }
+//            );
 
     // ============================
     // Game
@@ -518,9 +566,18 @@ function handlePhase(data) {
 
     switch (phase) {
 
+        case 'WAITING':
+            gameMessage.textContent =
+                '게임이 곧 시작됩니다.';
+
+            startTimer(10);
+
+            break;
+
         case 'NIGHT':
             nightArea.style.display = 'block';
-            gameMessage.textContent = '밤이 되었습니다.';
+            gameMessage.textContent =
+                '밤이 되었습니다.';
 
             loadMyInfo();
             startTimer(30);
@@ -532,7 +589,8 @@ function handlePhase(data) {
             gameMessage.textContent =
                 '낮이 되었습니다. 토론을 시작하세요.';
 
-            const count = parseInt(playerCount.textContent);
+            const count =
+                parseInt(playerCount.textContent);
 
             startTimer(30 + (count * 5));
 
@@ -544,7 +602,8 @@ function handlePhase(data) {
             gameMessage.textContent =
                 '투표할 플레이어를 선택하세요.';
 
-            const count = parseInt(playerCount.textContent);
+            const count =
+                parseInt(playerCount.textContent);
 
             startTimer(15 + (count * 2));
 
@@ -570,7 +629,6 @@ function handlePhase(data) {
 // ================================
 // 게임 메시지 처리
 // ================================
-
 function handleGameMessage(data) {
 
     console.log('게임 메시지 수신:', data);
@@ -581,23 +639,33 @@ function handleGameMessage(data) {
 
     switch (data.type) {
 
+        case 'GAME_STARTED':
+
+            // 게임 시작 후 내 역할 다시 조회
+            loadMyInfo();
+
+            break;
+
         case 'NIGHT_RESULT':
             gameMessage.textContent =
                 data.message || '밤 결과가 발표되었습니다.';
 
-                loadParticipants();
-                loadMyInfo();
+            loadParticipants();
+            loadMyInfo();
+
             break;
 
         case 'VOTE_TIE':
             gameMessage.textContent =
                 data.message || '투표 결과 동률입니다.';
+
             break;
 
         default:
             break;
     }
 }
+
 
 
 // ================================
@@ -734,6 +802,9 @@ async function startGame() {
 }
 
 async function sendNightAction() {
+
+    console.log('🔥🔥 sendNightAction 호출됨');
+
 
     if (!selectedTargetId) {
         alert('행동할 대상을 선택하세요.');

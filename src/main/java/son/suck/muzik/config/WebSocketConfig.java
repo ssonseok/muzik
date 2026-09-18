@@ -20,6 +20,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final MafiaWebSocketInterceptor mafiaWebSocketInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -35,29 +36,57 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
     @Override
-    public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(new ChannelInterceptor() {
-            @Override
-            public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+    public void configureClientInboundChannel(
+            ChannelRegistration registration) {
 
-                if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    String bearerToken = accessor.getFirstNativeHeader("Authorization");
+        // 기존 JWT CONNECT 처리
+        registration.interceptors(
+                new ChannelInterceptor() {
 
-                    if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-                        String token = bearerToken.substring(7);
+                    @Override
+                    public Message<?> preSend(
+                            Message<?> message,
+                            MessageChannel channel) {
 
-                        if (jwtTokenProvider.validateToken(token)) {
-                            Long userId = jwtTokenProvider.getUserId(token);
+                        StompHeaderAccessor accessor =
+                                MessageHeaderAccessor.getAccessor(
+                                        message,
+                                        StompHeaderAccessor.class
+                                );
 
-                            if (accessor.getSessionAttributes() != null) {
-                                accessor.getSessionAttributes().put("userId", userId);
+                        if (accessor != null &&
+                                StompCommand.CONNECT.equals(
+                                        accessor.getCommand())) {
+
+                            String bearerToken =
+                                    accessor.getFirstNativeHeader(
+                                            "Authorization"
+                                    );
+
+                            if (bearerToken != null &&
+                                    bearerToken.startsWith("Bearer ")) {
+
+                                String token =
+                                        bearerToken.substring(7);
+
+                                Long userId =
+                                        jwtTokenProvider.getUserId(token);
+
+                                if (accessor.getSessionAttributes()
+                                        != null) {
+
+                                    accessor.getSessionAttributes()
+                                            .put("userId", userId);
+                                }
                             }
                         }
+
+                        return message;
                     }
-                }
-                return message;
-            }
-        });
+                },
+
+                // 마피아 전용 SUBSCRIBE 검사
+                mafiaWebSocketInterceptor
+        );
     }
 }

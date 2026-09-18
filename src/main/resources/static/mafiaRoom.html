@@ -1,5 +1,7 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <title>MAFIA GAME - 게임방</title>
@@ -8,15 +10,10 @@
 <body>
 
 <header>
-    <div>
-        <h1>MAFIA GAME</h1>
-    </div>
+    <h1>🔪 MAFIA GAME</h1>
 
     <div>
-        <span>
-            <b id="myNickname">불러오는 중...</b>
-        </span>
-
+        <b id="myNickname">불러오는 중...</b>
         <button type="button" id="leaveRoomBtn">방 나가기</button>
     </div>
 </header>
@@ -25,39 +22,43 @@
 <main>
 
     <!-- =========================
-         방 정보
+         게임 기본 정보
     ========================== -->
 
     <section>
+
         <h2 id="roomName">방 정보</h2>
 
         <div>
-            <span>현재 인원 : </span>
+            <span>인원 : </span>
             <b id="playerCount">-</b>
-        </div>
 
-        <div>
-            <span>현재 단계 : </span>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+
+            <span>단계 : </span>
             <b id="gamePhase">WAITING</b>
-        </div>
 
-        <div>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+
             <span>남은 시간 : </span>
             <b id="timer">-</b>
         </div>
+
     </section>
 
 
     <!-- =========================
-         참가자 목록
+         참가자
     ========================== -->
 
     <section>
-        <h2>PLAYER</h2>
 
-        <ul id="playerList">
-            <li>참가자를 불러오는 중...</li>
-        </ul>
+        <h2>PLAYERS</h2>
+
+        <div id="playerList">
+            참가자를 불러오는 중...
+        </div>
+
     </section>
 
 
@@ -66,22 +67,32 @@
     ========================== -->
 
     <section>
+
         <h2>MY INFO</h2>
 
         <div>
-            <span>닉네임 : </span>
-            <b id="myInfoNickname">-</b>
+
+            <span>
+                닉네임 :
+                <b id="myInfoNickname">-</b>
+            </span>
+
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+
+            <span>
+                생존 :
+                <b id="myAliveStatus">-</b>
+            </span>
+
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+
+            <span>
+                직업 :
+                <b id="myRole">게임 시작 후 공개</b>
+            </span>
+
         </div>
 
-        <div>
-            <span>생존 상태 : </span>
-            <b id="myAliveStatus">-</b>
-        </div>
-
-        <div>
-            <span>직업 : </span>
-            <b id="myRole">게임 시작 후 공개</b>
-        </div>
     </section>
 
 
@@ -92,6 +103,7 @@
     <section id="gameArea">
 
         <!-- NIGHT -->
+
         <div id="nightArea" style="display: none;">
 
             <h2>🌙 NIGHT</h2>
@@ -100,9 +112,15 @@
                 밤입니다. 자신의 역할에 따라 행동을 선택하세요.
             </p>
 
-            <div id="nightTargetArea">
-                <!-- JS에서 대상 버튼 생성 -->
+            <div>
+                <h3>행동 대상</h3>
+
+                <div id="nightTargetArea">
+                    <!-- JS에서 대상 버튼 생성 -->
+                </div>
             </div>
+
+            <br>
 
             <button type="button" id="nightActionBtn">
                 행동 선택
@@ -112,6 +130,7 @@
 
 
         <!-- DAY -->
+
         <div id="dayArea" style="display: none;">
 
             <h2>☀️ DAY</h2>
@@ -124,6 +143,7 @@
 
 
         <!-- VOTE -->
+
         <div id="voteArea" style="display: none;">
 
             <h2>🗳 VOTE</h2>
@@ -136,6 +156,8 @@
                 <!-- JS에서 대상 버튼 생성 -->
             </div>
 
+            <br>
+
             <button type="button" id="voteBtn">
                 투표하기
             </button>
@@ -144,6 +166,7 @@
 
 
         <!-- DEFENSE -->
+
         <div id="defenseArea" style="display: none;">
 
             <h2>⚖ DEFENSE</h2>
@@ -152,15 +175,13 @@
                 해당 플레이어를 처형하시겠습니까?
             </p>
 
-            <div>
-                <button type="button" id="defenseAgreeBtn">
-                    찬성
-                </button>
+            <button type="button" id="defenseAgreeBtn">
+                찬성
+            </button>
 
-                <button type="button" id="defenseDisagreeBtn">
-                    반대
-                </button>
-            </div>
+            <button type="button" id="defenseDisagreeBtn">
+                반대
+            </button>
 
         </div>
 
@@ -172,69 +193,138 @@
     ========================== -->
 
     <section>
-        <h2>GAME MESSAGE</h2>
 
-        <div id="gameMessage">
+        <h2>📢 GAME MESSAGE</h2>
+
+        <div
+                id="gameMessage"
+                style="
+                border: 1px solid #999;
+                padding: 10px;
+                min-height: 40px;
+            "
+        >
             게임 메시지가 표시됩니다.
         </div>
+
     </section>
 
 
     <!-- =========================
          채팅
+         일반 / 마피아 가로 배치
     ========================== -->
 
     <section>
-        <h2>CHAT</h2>
 
-        <div id="chatMessages">
-            <!-- 채팅 메시지 -->
-        </div>
+        <div style="
+            display: flex;
+            gap: 20px;
+            width: 100%;
+        ">
 
-        <div>
-            <input
-                    type="text"
-                    id="chatInput"
-                    placeholder="메시지를 입력하세요."
+            <!-- 일반 채팅 -->
+
+            <div style="
+                flex: 1;
+            ">
+
+                <h2>💬 CHAT</h2>
+
+                <div
+                        id="chatMessages"
+                        style="
+                        height: 250px;
+                        overflow-y: auto;
+                        border: 1px solid #999;
+                        padding: 10px;
+                        box-sizing: border-box;
+                    "
+                >
+                    <!-- 일반 채팅 -->
+                </div>
+
+                <div>
+                    <input
+                            type="text"
+                            id="chatInput"
+                            placeholder="메시지를 입력하세요."
+                    >
+
+                    <button
+                            type="button"
+                            id="chatSendBtn"
+                    >
+                        전송
+                    </button>
+                </div>
+
+            </div>
+
+
+            <!-- 마피아 채팅 -->
+
+            <div
+                    id="mafiaChatArea"
+                    style="
+                    flex: 1;
+                "
             >
 
-            <button type="button" id="chatSendBtn">
-                전송
-            </button>
-        </div>
-    </section>
-    <section id="mafiaChatArea" style="display: none;">
+                <h2>😈 MAFIA CHAT</h2>
 
-        <h2>MAFIA CHAT</h2>
+                <div
+                        id="mafiaChatMessages"
+                        style="
+                        height: 250px;
+                        overflow-y: auto;
+                        border: 1px solid #999;
+                        padding: 10px;
+                        box-sizing: border-box;
+                    "
+                >
+                    <!-- 마피아 전용 채팅 -->
+                </div>
 
-        <div id="mafiaChatMessages">
-            <!-- 마피아 전용 채팅 메시지 -->
-        </div>
+                <div>
 
-        <div>
-            <input
-                    type="text"
-                    id="mafiaChatInput"
-                    placeholder="마피아끼리만 볼 수 있습니다."
-            >
+                    <input
+                            type="text"
+                            id="mafiaChatInput"
+                            placeholder="마피아끼리만 볼 수 있습니다."
+                    >
 
-            <button type="button" id="mafiaChatSendBtn">
-                전송
-            </button>
+                    <button
+                            type="button"
+                            id="mafiaChatSendBtn"
+                    >
+                        전송
+                    </button>
+
+                </div>
+
+            </div>
+
         </div>
 
     </section>
 
 
     <!-- =========================
-         방장 전용
+         방장
     ========================== -->
 
-    <section id="hostArea" style="display: none;">
+    <section
+            id="hostArea"
+            style="display: none;"
+    >
 
         <h2>HOST</h2>
 
-        <button type="button" id="startGameBtn">
+        <button
+                type="button"
+                id="startGameBtn"
+        >
             게임 시작
         </button>
 
@@ -246,9 +336,11 @@
 <script src="config.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
 <script src="mafiaRoom.js"></script>
 
 </body>
 </html>
+```
