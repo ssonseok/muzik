@@ -63,6 +63,7 @@ const leaveRoomBtn = document.getElementById('leaveRoomBtn');
 // ================================
 
 let stompClient = null;
+let timerInterval = null;
 
 
 // ================================
@@ -147,6 +148,30 @@ async function loadParticipants() {
             '참가자 목록을 불러오지 못했습니다.';
     }
 }
+
+// ================================
+// 타이머
+// ================================
+function startTimer(seconds) {
+
+    clearInterval(timerInterval);
+
+    let remainingSeconds = seconds;
+
+    timer.textContent = `${remainingSeconds}초`;
+
+    timerInterval = setInterval(() => {
+
+        remainingSeconds--;
+
+        timer.textContent = `${remainingSeconds}초`;
+
+        if (remainingSeconds <= 0) {
+            clearInterval(timerInterval);
+        }
+
+    }, 1000);
+}
 function renderParticipants(participants) {
 
     playerList.innerHTML = '';
@@ -177,14 +202,14 @@ function renderMyInfo(data) {
  myNickname.textContent = data.nickname;
  myInfoNickname.textContent = data.nickname;
  // 생존 상태
- myAliveStatus.textContent = data.isAlive ? '생존' : '사망';
+ myAliveStatus.textContent = data.alive ? '생존' : '사망';
  // 직업
  if (data.mafiaRole) {
  myRole.textContent = data.mafiaRole;
  } else { myRole.textContent = '게임 시작 후 공개';
  }
  // 방장 여부
- if (data.isHost) {
+ if (data.host) {
   hostArea.style.display = 'block';
   } else {
   hostArea.style.display = 'none';
@@ -269,6 +294,7 @@ function subscribeRoom() {
                 console.log('참가자 변경:', message.body);
 
                 loadParticipants();
+                loadMyInfo();
             }
         );
 
@@ -318,9 +344,7 @@ function handlePhase(data) {
 
     const phase = data.phase;
 
-    if (!phase) {
-        return;
-    }
+    if (!phase) return;
 
     gamePhase.textContent = phase;
 
@@ -330,29 +354,48 @@ function handlePhase(data) {
 
         case 'NIGHT':
             nightArea.style.display = 'block';
-            gameMessage.textContent =
-                '밤이 되었습니다.';
+            gameMessage.textContent = '밤이 되었습니다.';
+
+            loadMyInfo();
+            startTimer(30);
+
             break;
 
-        case 'DAY':
+        case 'DAY': {
             dayArea.style.display = 'block';
             gameMessage.textContent =
                 '낮이 되었습니다. 토론을 시작하세요.';
-            break;
 
-        case 'VOTE':
+            const count = parseInt(playerCount.textContent);
+
+            startTimer(30 + (count * 5));
+
+            break;
+        }
+
+        case 'VOTE': {
             voteArea.style.display = 'block';
             gameMessage.textContent =
                 '투표할 플레이어를 선택하세요.';
+
+            const count = parseInt(playerCount.textContent);
+
+            startTimer(15 + (count * 2));
+
             break;
+        }
 
         case 'DEFENSE':
             defenseArea.style.display = 'block';
             gameMessage.textContent =
                 '찬반 투표를 진행합니다.';
+
+            startTimer(15);
+
             break;
 
         default:
+            timer.textContent = '-';
             break;
     }
 }
