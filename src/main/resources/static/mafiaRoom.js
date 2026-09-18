@@ -56,6 +56,19 @@ const hostArea = document.getElementById('hostArea');
 const startGameBtn = document.getElementById('startGameBtn');
 
 const leaveRoomBtn = document.getElementById('leaveRoomBtn');
+const nightRoleMessage =
+    document.getElementById('nightRoleMessage');
+const mafiaChatArea =
+    document.getElementById('mafiaChatArea');
+
+const mafiaChatMessages =
+    document.getElementById('mafiaChatMessages');
+
+const mafiaChatInput =
+    document.getElementById('mafiaChatInput');
+
+const mafiaChatSendBtn =
+    document.getElementById('mafiaChatSendBtn');
 
 
 // ================================
@@ -64,6 +77,8 @@ const leaveRoomBtn = document.getElementById('leaveRoomBtn');
 
 let stompClient = null;
 let timerInterval = null;
+let myRoleValue = null;
+let selectedTargetId = null;
 
 
 // ================================
@@ -197,28 +212,161 @@ function renderParticipants(participants) {
 // ================================
 
 function renderMyInfo(data) {
- console.log('내 정보:', data);
- // 닉네임
- myNickname.textContent = data.nickname;
- myInfoNickname.textContent = data.nickname;
- // 생존 상태
- myAliveStatus.textContent = data.alive ? '생존' : '사망';
- // 직업
- if (data.mafiaRole) {
- myRole.textContent = data.mafiaRole;
- } else { myRole.textContent = '게임 시작 후 공개';
- }
- // 방장 여부
- if (data.host) {
-  hostArea.style.display = 'block';
-  } else {
-  hostArea.style.display = 'none';
-  }
-  // 현재 게임 단계
-  if (data.gamePhase) {
-  gamePhase.textContent = data.gamePhase;
-   }
-  }
+
+    console.log('내 정보:', data);
+
+    myNickname.textContent = data.nickname;
+    myInfoNickname.textContent = data.nickname;
+    myAliveStatus.textContent = data.alive ? '생존' : '사망';
+
+    myRoleValue = data.mafiaRole;
+
+    if (data.mafiaRole === 'MAFIA' && data.alive) {
+        mafiaChatArea.style.display = 'block';
+    } else {
+        mafiaChatArea.style.display = 'none';
+    }
+
+    if (data.mafiaRole) {
+        myRole.textContent = data.mafiaRole;
+    } else {
+        myRole.textContent = '게임 시작 후 공개';
+    }
+
+    if (data.host) {
+        hostArea.style.display = 'block';
+    } else {
+        hostArea.style.display = 'none';
+    }
+
+    if (data.gamePhase) {
+        gamePhase.textContent = data.gamePhase;
+    }
+
+    // 밤 역할 UI 갱신
+    renderNightAction();
+}
+
+function renderNightAction() {
+
+    nightTargetArea.innerHTML = '';
+    selectedTargetId = null;
+
+    if (!myRoleValue) {
+        nightActionBtn.style.display = 'none';
+        return;
+    }
+
+    if (myRoleValue === 'CITIZEN') {
+        nightRoleMessage.textContent =
+            '이번 판은 시민입니다. 밤에는 행동할 수 없습니다.';
+
+        nightActionBtn.style.display = 'none';
+        return;
+    }
+
+    if (myRoleValue === 'SOLDIER') {
+        nightRoleMessage.textContent =
+            '이번 판은 군인입니다. 밤에는 행동할 수 없습니다.';
+
+        nightActionBtn.style.display = 'none';
+        return;
+    }
+
+    switch (myRoleValue) {
+
+        case 'MAFIA':
+            nightRoleMessage.textContent =
+                '죽일 플레이어를 선택하세요.';
+            createNightTargetButtons();
+            break;
+
+        case 'POLICE':
+            nightRoleMessage.textContent =
+                '조사할 플레이어를 선택하세요.';
+            createNightTargetButtons();
+            break;
+
+        case 'DOCTOR':
+            nightRoleMessage.textContent =
+                '살릴 플레이어를 선택하세요.';
+            createNightTargetButtons();
+            break;
+    }
+}
+
+function createNightTargetButtons() {
+
+    loadParticipantsForNight();
+}
+
+async function loadParticipantsForNight() {
+
+    try {
+
+        const response = await fetch(
+            `${ROOMS_API}/${roomId}/participants`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('참가자 목록 조회 실패');
+        }
+
+        const participants = await response.json();
+
+        nightTargetArea.innerHTML = '';
+
+        participants
+            .filter(participant => participant.alive)
+            .forEach(participant => {
+
+                const button =
+                    document.createElement('button');
+
+                button.type = 'button';
+
+                button.textContent =
+                    participant.nickname;
+
+                button.addEventListener('click', () => {
+
+                    selectedTargetId =
+                        participant.participantId;
+
+                    document
+                        .querySelectorAll('#nightTargetArea button')
+                        .forEach(btn => {
+                            btn.classList.remove('selected');
+                        });
+
+                    button.classList.add('selected');
+
+                    console.log(
+                        '선택한 대상:',
+                        selectedTargetId
+                    );
+                });
+
+                nightTargetArea.appendChild(button);
+            });
+
+    } catch (error) {
+
+        console.error(
+            '밤 대상 목록 조회 실패:',
+            error
+        );
+
+        gameMessage.textContent =
+            '대상 목록을 불러오지 못했습니다.';
+    }
+}
 
 
 
@@ -297,6 +445,19 @@ function subscribeRoom() {
                 loadMyInfo();
             }
         );
+
+        // Mafia Chat
+            stompClient.subscribe(
+                `/sub/room/${roomId}/mafia-chat`,
+                function (message) {
+
+                    const data = JSON.parse(message.body);
+
+                    console.log('Mafia Chat:', data);
+
+                    handleMafiaChatMessage(data);
+                }
+            );
 
 
     // ============================
@@ -443,6 +604,20 @@ function handleChatMessage(data) {
         chatMessages.scrollHeight;
 }
 
+function handleMafiaChatMessage(data) {
+
+    const messageElement =
+        document.createElement('div');
+
+    messageElement.textContent =
+        `${data.senderName} : ${data.message}`;
+
+    mafiaChatMessages.appendChild(messageElement);
+
+    mafiaChatMessages.scrollTop =
+        mafiaChatMessages.scrollHeight;
+}
+
 
 // ================================
 // 채팅 전송
@@ -470,6 +645,32 @@ function sendChat() {
     );
 
     chatInput.value = '';
+}
+
+function sendMafiaChat() {
+
+    const message = mafiaChatInput.value.trim();
+
+    if (!message) return;
+
+    if (!stompClient || !stompClient.connected) {
+        alert('서버에 연결되지 않았습니다.');
+        return;
+    }
+
+    if (myRoleValue !== 'MAFIA') {
+        return;
+    }
+
+    stompClient.send(
+        `/app/room/${roomId}/mafia-chat`,
+        {},
+        JSON.stringify({
+            message: message
+        })
+    );
+
+    mafiaChatInput.value = '';
 }
 
 
@@ -516,6 +717,78 @@ async function startGame() {
         console.error('게임 시작 실패:', error);
 
         alert('게임 시작 중 오류가 발생했습니다.');
+    }
+}
+
+async function sendNightAction() {
+
+    if (!selectedTargetId) {
+        alert('행동할 대상을 선택하세요.');
+        return;
+    }
+
+    let actionType;
+
+    switch (myRoleValue) {
+
+        case 'MAFIA':
+            actionType = 'MAFIA_KILL';
+            break;
+
+        case 'DOCTOR':
+            actionType = 'DOCTOR_HEAL';
+            break;
+
+        case 'POLICE':
+            actionType = 'POLICE_INVESTIGATE';
+            break;
+
+        default:
+            return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${MAFIA_API}/night/action`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    roomId: Number(roomId),
+                    targetId: selectedTargetId,
+                    actionType: actionType
+                })
+            }
+        );
+
+        if (!response.ok) {
+
+            const message =
+                await response.text();
+
+            alert(
+                message || '밤 행동에 실패했습니다.'
+            );
+
+            return;
+        }
+
+        alert('밤 행동이 접수되었습니다.');
+
+        nightActionBtn.disabled = true;
+
+    } catch (error) {
+
+        console.error(
+            '밤 행동 실패:',
+            error
+        );
+
+        alert('밤 행동 중 오류가 발생했습니다.');
     }
 }
 
@@ -599,6 +872,18 @@ leaveRoomBtn.addEventListener(
     leaveRoom
 );
 
+mafiaChatSendBtn.addEventListener(
+    'click',
+    sendMafiaChat
+);
+mafiaChatInput.addEventListener('keydown', function (event) {
+
+    if (event.key === 'Enter') {
+        sendMafiaChat();
+    }
+
+});
+
 document.getElementById('chatSendBtn')
     .addEventListener(
         'click',
@@ -613,6 +898,11 @@ chatInput.addEventListener(
             sendChat();
         }
     }
+);
+
+nightActionBtn.addEventListener(
+    'click',
+    sendNightAction
 );
 
 
