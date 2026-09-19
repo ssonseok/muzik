@@ -352,42 +352,54 @@ function renderNightAction() {
         return;
     }
 
-    if (myRoleValue === 'CITIZEN') {
-        nightRoleMessage.textContent =
-            '이번 판은 시민입니다. 밤에는 행동할 수 없습니다.';
-
-        nightActionBtn.style.display = 'none';
-        return;
-    }
-
-    if (myRoleValue === 'SOLDIER') {
-        nightRoleMessage.textContent =
-            '이번 판은 군인입니다. 밤에는 행동할 수 없습니다.';
-
-        nightActionBtn.style.display = 'none';
-        return;
-    }
-
-    nightActionBtn.style.display = 'block';
-
     switch (myRoleValue) {
 
         case 'MAFIA':
             nightRoleMessage.textContent =
                 '죽일 플레이어를 선택하세요.';
+
+            nightActionBtn.textContent = '살해하기';
+            nightActionBtn.style.display = 'block';
+
             createNightTargetButtons();
             break;
 
         case 'POLICE':
             nightRoleMessage.textContent =
                 '조사할 플레이어를 선택하세요.';
+
+            nightActionBtn.textContent = '조사하기';
+            nightActionBtn.style.display = 'block';
+
             createNightTargetButtons();
             break;
 
         case 'DOCTOR':
             nightRoleMessage.textContent =
                 '살릴 플레이어를 선택하세요.';
+
+            nightActionBtn.textContent = '치료하기';
+            nightActionBtn.style.display = 'block';
+
             createNightTargetButtons();
+            break;
+
+        case 'CITIZEN':
+            nightRoleMessage.textContent =
+                '이번 판은 시민입니다. 밤에는 행동할 수 없습니다.';
+
+            nightActionBtn.style.display = 'none';
+            break;
+
+        case 'SOLDIER':
+            nightRoleMessage.textContent =
+                '이번 판은 군인입니다. 밤에는 행동할 수 없습니다.';
+
+            nightActionBtn.style.display = 'none';
+            break;
+
+        default:
+            nightActionBtn.style.display = 'none';
             break;
     }
 }
