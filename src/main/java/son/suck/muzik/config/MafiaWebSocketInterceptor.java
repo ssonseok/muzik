@@ -59,9 +59,13 @@ public class MafiaWebSocketInterceptor
                     destination.matches(
                             "^/sub/room/\\d+/police$"
                     );
+            boolean isSoldierChannel =
+                    destination.matches(
+                            "^/sub/room/\\d+/soldier$"
+                    );
 
             // 둘 다 아니면 검사하지 않음
-            if (!isMafiaChat && !isPoliceChannel) {
+            if (!isMafiaChat && !isPoliceChannel && !isSoldierChannel) {
                 return message;
             }
 
@@ -117,6 +121,16 @@ public class MafiaWebSocketInterceptor
 
                 throw new IllegalStateException(
                         "경찰만 사용할 수 있는 채널입니다."
+                );
+            }
+
+            // 군인 채널이면 군인만 허용
+            if (isSoldierChannel &&
+                    participant.getMafiaRole()
+                            != Mafia_Role.SOLDIER) {
+
+                throw new IllegalStateException(
+                        "군인만 사용할 수 있는 채널입니다."
                 );
             }
         }

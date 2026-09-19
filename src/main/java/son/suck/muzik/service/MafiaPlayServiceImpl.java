@@ -274,22 +274,25 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         }
 
         if (targetParticipant.getMafiaRole() == Mafia_Role.SOLDIER) {
+
             if (!targetParticipant.isSoldierShieldUsed()) {
+
                 targetParticipant.useSoldierShield();
+
+                messagingTemplate.convertAndSend(
+                        "/sub/room/" + roomId + "/soldier",
+                        Map.of(
+                                "type", "SOLDIER_SHIELD",
+                                "message", "마피아(들)의 공격을 막았습니다."
+                        )
+                );
+
                 return null;
             }
         }
 
         targetParticipant.die();
-        System.out.println(
-                "🔥 사망 처리: participantId = "
-                        + targetParticipant.getId()
-                        + ", alive = "
-                        + targetParticipant.isAlive()
-        );
-
         gameParticipantRepository.save(targetParticipant);
-
         return targetParticipant.getId();
     }
 

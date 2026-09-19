@@ -72,6 +72,7 @@ const mafiaChatSendBtn =
     document.getElementById('mafiaChatSendBtn');
 let mafiaChatSubscription = null;
 let policeSubscription = null;
+let soldierShieldSubscription = null;
 
 
 // ================================
@@ -295,6 +296,30 @@ function renderMyInfo(data) {
     }
 
     // ================================
+    // 군인 방패 발동 결과 구독
+    // ================================
+    if (data.mafiaRole === 'SOLDIER') {
+
+        if (!soldierShieldSubscription &&
+            stompClient &&
+            stompClient.connected) {
+
+            soldierShieldSubscription = stompClient.subscribe(
+                `/sub/room/${roomId}/soldier`,
+                function (message) {
+
+                    const soldierData =
+                        JSON.parse(message.body);
+
+                    handleSoldierShieldMessage(
+                        soldierData
+                    );
+                }
+            );
+        }
+    }
+
+    // ================================
     // 역할 표시
     // ================================
 
@@ -360,6 +385,26 @@ function handlePoliceInvestigationResult(data) {
         '경찰 조사 결과:',
         resultMessage
     );
+}
+function handleSoldierShieldMessage(data) {
+
+    if (!data) {
+        return;
+    }
+
+    const messageElement =
+        document.createElement('div');
+
+    messageElement.textContent =
+        `${data.message}`;
+
+    messageElement.style.fontWeight = 'bold';
+    messageElement.style.margin = '5px 0';
+
+    chatMessages.appendChild(messageElement);
+
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
 }
 
 function renderNightAction() {
