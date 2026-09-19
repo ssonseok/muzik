@@ -268,7 +268,6 @@ function renderMyInfo(data) {
     // ================================
     // 경찰 조사 결과 구독
     // ================================
-
     if (data.mafiaRole === 'POLICE') {
 
         if (!policeSubscription &&
@@ -283,7 +282,7 @@ function renderMyInfo(data) {
                         JSON.parse(message.body);
 
                     console.log(
-                        'Police Investigation:',
+                        '경찰 조사 결과:',
                         policeData
                     );
 
@@ -325,10 +324,14 @@ function renderMyInfo(data) {
 
     renderNightAction();
 }
-
 function handlePoliceInvestigationResult(data) {
 
     if (!data) {
+        return;
+    }
+
+    // 경찰 본인만 처리
+    if (myRoleValue !== 'POLICE') {
         return;
     }
 
@@ -337,9 +340,26 @@ function handlePoliceInvestigationResult(data) {
             ? `${data.targetNickname}님은 마피아입니다.`
             : `${data.targetNickname}님은 마피아가 아닙니다.`;
 
-    gameMessage.textContent = resultMessage;
+    const messageElement =
+        document.createElement('div');
 
-    console.log('경찰 조사 결과:', resultMessage);
+    messageElement.textContent =
+        `🔎 [경찰 조사] ${resultMessage}`;
+
+    // 경찰 조사 결과 전용 스타일
+    messageElement.style.fontWeight = 'bold';
+    messageElement.style.color = '#d4a017';
+    messageElement.style.margin = '5px 0';
+
+    chatMessages.appendChild(messageElement);
+
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
+
+    console.log(
+        '경찰 조사 결과:',
+        resultMessage
+    );
 }
 
 function renderNightAction() {
