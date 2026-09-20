@@ -768,8 +768,13 @@ function handleGameMessage(data) {
             break;
 
         case 'NIGHT_RESULT':
+
             gameMessage.textContent =
                 data.message || '밤 결과가 발표되었습니다.';
+
+            addGameLog(
+                data.message || '밤 결과가 발표되었습니다.'
+            );
 
             loadParticipants();
             loadMyInfo();
