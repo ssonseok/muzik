@@ -81,12 +81,24 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
 
     @Override
     public void startVotingPhase(Long roomId, int participantCount) {
+
         changePhaseAndBroadcast(roomId, GamePhase.VOTE);
+
         int duration = 15 + (participantCount * 2);
 
         scheduleNextPhase(roomId, duration, () -> {
-            mafiaPlayService.calculateDayResult(roomId);
-            startDefensePhase(roomId, participantCount);
+
+            boolean defenseNeeded =
+                    mafiaPlayService.calculateDayResult(roomId);
+
+            if (defenseNeeded) {
+                // 처형 후보가 있으므로 최후 반론
+                startDefensePhase(roomId, participantCount);
+
+            } else {
+                // 동률이므로 반론 없이 바로 다음 밤
+                startNightPhase(roomId, participantCount);
+            }
         });
     }
 

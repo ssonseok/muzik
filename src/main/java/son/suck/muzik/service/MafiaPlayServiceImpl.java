@@ -385,8 +385,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         GameRoom room = findRoom(roomId);
 
         if (room.getGamePhase() == GamePhase.VOTE) {
-            processNominationResult(roomId);
-            return false;
+            return processNominationResult(roomId);
         } else if (room.getGamePhase() == GamePhase.DEFENSE) {
             return processDefenseResult(roomId);
         }
@@ -448,12 +447,12 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
     // 내부 정산 헬퍼 메서드
     // ===================================================================
 
-    private void processNominationResult(Long roomId) {
+    private boolean processNominationResult(Long roomId) {
         ConcurrentHashMap<Long, Long> roomVotes = nominationVotes.remove(roomId);
 
         if (roomVotes == null || roomVotes.isEmpty()) {
             log.info("방 [{}] 접수된 투표 없음.", roomId);
-            return;
+            return false;
         }
 
         Map<Long, Integer> voteCounts = new HashMap<>();
@@ -489,7 +488,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
                     )
             );
 
-            return;
+            return false;
         }
 
         executionTargets.put(roomId, electedTargetId);
@@ -514,6 +513,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
                         nickname + "님의 최후 반론 시간입니다."
                 )
         );
+        return true;
     }
 
     private boolean processDefenseResult(Long roomId) {
