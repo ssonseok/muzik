@@ -841,68 +841,121 @@ function subscribeRoom() {
 // ================================
 
 function handlePhase(data) {
+
     const phase = data.phase;
+
     if (!phase) return;
+
     gamePhase.textContent = phase;
+
     hideAllGameAreas();
+
     switch (phase) {
+
         case 'WAITING':
             gameMessage.textContent =
                 '게임이 곧 시작됩니다.';
+
             startTimer(10);
             break;
+
+
         case 'NIGHT':
+
+            // 밤이 새로 시작될 때 능력 버튼 초기화
+            nightActionBtn.disabled = false;
+
             if (!isFirstNight) {
                 currentDay++;
             }
+
             isFirstNight = false;
+
             nightArea.style.display = 'block';
+
             gameMessage.textContent =
                 '밤이 되었습니다.';
+
             addGameLog(
                 `🌙 ${currentDay}일차 밤이 시작되었습니다.`
             );
+
             loadMyInfo();
+
             startTimer(30);
+
             break;
+
+
         case 'DAY': {
+
             dayArea.style.display = 'block';
+
             gameMessage.textContent =
                 '낮이 되었습니다. 토론을 시작하세요.';
+
             addGameLog(
                 `☀️ ${currentDay}일차 낮이 시작되었습니다.`
             );
+
             const count =
                 parseInt(playerCount.textContent);
+
             startTimer(
                 30 + (count * 5)
             );
+
             break;
         }
+
+
         case 'VOTE': {
+
+            // 새로운 투표 시작
+            voteBtn.disabled = false;
+
             voteArea.style.display = 'block';
+
             gameMessage.textContent =
                 '투표할 플레이어를 선택하세요.';
+
             loadVoteTargets();
+
             addGameLog(
                 `🗳️ ${currentDay}일차 투표가 시작되었습니다.`
             );
+
             const count =
                 parseInt(playerCount.textContent);
+
             startTimer(
                 15 + (count * 2)
             );
+
             break;
         }
+
+
         case 'DEFENSE':
+
+            // 새로운 반론 시작
+            defenseAgreeBtn.disabled = false;
+            defenseDisagreeBtn.disabled = false;
+
             defenseArea.style.display = 'block';
+
             gameMessage.textContent =
                 '찬반 투표를 진행합니다.';
+
             addGameLog(
                 `⚖️ ${currentDay}일차 반론이 시작되었습니다.`
             );
+
             startTimer(15);
+
             break;
+
+
         default:
             timer.textContent = '-';
             break;
