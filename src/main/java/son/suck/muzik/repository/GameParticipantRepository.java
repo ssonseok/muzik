@@ -1,6 +1,8 @@
 package son.suck.muzik.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import son.suck.muzik.domain.GameParticipant;
 
 import java.util.List;
@@ -14,4 +16,14 @@ public interface GameParticipantRepository extends JpaRepository<GameParticipant
     Optional<GameParticipant> findByUserId(Long userId);
     // 특정 방에 있는 특정 유저의 참여 정보 단건 조회 (퇴장 처리용)
     Optional<GameParticipant> findByGameRoomIdAndUserId(Long roomId, Long userId);
+    //1차투표때 닉네임 가져오려고
+    @Query("""
+        select gp
+        from GameParticipant gp
+        join fetch gp.user
+        where gp.id = :participantId
+    """)
+    Optional<GameParticipant> findByIdWithUser(
+            @Param("participantId") Long participantId
+    );
 }

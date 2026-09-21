@@ -49,6 +49,7 @@ const defenseArea = document.getElementById('defenseArea');
 const nightTargetArea = document.getElementById('nightTargetArea');
 const nightActionBtn = document.getElementById('nightActionBtn');
 const voteTargetArea = document.getElementById('voteTargetArea');
+const voteBtn = document.getElementById('voteBtn');
 
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
@@ -67,12 +68,16 @@ const mafiaChatMessages =
 
 const mafiaChatInput =
     document.getElementById('mafiaChatInput');
-
 const mafiaChatSendBtn =
     document.getElementById('mafiaChatSendBtn');
-
 const gameLog = document.getElementById('gameLog');
-
+const defenseAgreeBtn =
+    document.getElementById('defenseAgreeBtn');
+const defenseDisagreeBtn =
+    document.getElementById('defenseDisagreeBtn');
+const defenseQuestion =
+    document.getElementById('defenseQuestion');
+let defenseTargetNickname = null;
 let mafiaChatSubscription = null;
 let policeSubscription = null;
 let soldierShieldSubscription = null;
@@ -216,6 +221,163 @@ function renderParticipants(participants) {
         playerElement.textContent = text;
 
         playerList.appendChild(playerElement);
+    });
+}
+
+async function sendNominationVote() {
+
+    if (!selectedTargetId) {
+        alert('투표할 플레이어를 선택하세요.');
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${MAFIA_API}/vote/nomination`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    roomId: Number(roomId),
+                    targetId: selectedTargetId
+                })
+            }
+        );
+
+        if (!response.ok) {
+
+            const message =
+                await response.text();
+
+            alert(
+                message ||
+                '투표에 실패했습니다.'
+            );
+
+            return;
+        }
+
+        const message =
+            await response.text();
+
+        console.log(
+            '1차 지목 투표 결과:',
+            message
+        );
+
+        alert('투표가 접수되었습니다.');
+
+        voteBtn.disabled = true;
+
+    } catch (error) {
+
+        console.error(
+            '1차 지목 투표 실패:',
+            error
+        );
+
+        alert('투표 중 오류가 발생했습니다.');
+    }
+}
+
+async function sendDefenseVote(isAgree) {
+
+    try {
+
+        const response = await fetch(
+            `${MAFIA_API}/vote/defense`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    roomId: Number(roomId),
+                    agree: isAgree
+                })
+            }
+        );
+
+        if (!response.ok) {
+
+            const message =
+                await response.text();
+
+            alert(
+                message ||
+                '찬반 투표에 실패했습니다.'
+            );
+
+            return;
+        }
+
+        console.log(
+            '찬반 투표 완료:',
+            isAgree ? '찬성' : '반대'
+        );
+
+        defenseAgreeBtn.disabled = true;
+        defenseDisagreeBtn.disabled = true;
+
+    } catch (error) {
+
+        console.error(
+            '찬반 투표 실패:',
+            error
+        );
+
+        alert('찬반 투표 중 오류가 발생했습니다.');
+    }
+}
+
+function renderVoteTargets(participants) {
+
+    voteTargetArea.innerHTML = '';
+
+    participants.forEach(participant => {
+
+        if (!participant.alive) {
+            return;
+        }
+
+        const button =
+            document.createElement('button');
+
+        button.textContent =
+            participant.nickname;
+
+        button.type = 'button';
+
+        button.addEventListener(
+            'click',
+            function () {
+
+                selectedTargetId =
+                    participant.participantId;
+
+                console.log(
+                    '투표 대상 선택:',
+                    participant
+                );
+
+                // 선택된 버튼 표시
+                const buttons =
+                    voteTargetArea.querySelectorAll('button');
+
+                buttons.forEach(btn => {
+                    btn.style.fontWeight = 'normal';
+                });
+
+                button.style.fontWeight = 'bold';
+            }
+        );
+
+        voteTargetArea.appendChild(button);
     });
 }
 
@@ -721,6 +883,7 @@ function handlePhase(data) {
             voteArea.style.display = 'block';
             gameMessage.textContent =
                 '투표할 플레이어를 선택하세요.';
+            loadVoteTargets();
             addGameLog(
                 `🗳️ ${currentDay}일차 투표가 시작되었습니다.`
             );
@@ -743,6 +906,40 @@ function handlePhase(data) {
         default:
             timer.textContent = '-';
             break;
+    }
+}
+async function loadVoteTargets() {
+
+    try {
+
+        const response = await fetch(
+            `${ROOMS_API}/${roomId}/participants`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization':
+                        `Bearer ${accessToken}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                '투표 대상 조회 실패'
+            );
+        }
+
+        const participants =
+            await response.json();
+
+        renderVoteTargets(participants);
+
+    } catch (error) {
+
+        console.error(
+            '투표 대상 조회 실패:',
+            error
+        );
     }
 }
 
@@ -784,6 +981,39 @@ function handleGameMessage(data) {
         case 'VOTE_TIE':
             gameMessage.textContent =
                 data.message || '투표 결과 동률입니다.';
+
+            break;
+
+        case 'DEFENSE_START':
+
+            defenseTargetNickname =
+                data.message.replace(
+                    '님의 최후 반론 시간입니다.',
+                    ''
+                );
+
+            defenseQuestion.textContent =
+                `${defenseTargetNickname}님을 처형하시겠습니까?`;
+
+            gameMessage.textContent =
+                data.message;
+
+            addGameLog(
+                `⚖️ ${data.message}`
+            );
+
+            break;
+
+        case 'EXECUTION_RESULT':
+            gameMessage.textContent =
+                data.message;
+
+            addGameLog(
+                data.message
+            );
+
+            loadParticipants();
+            loadMyInfo();
 
             break;
 
@@ -1113,6 +1343,23 @@ chatInput.addEventListener(
 nightActionBtn.addEventListener(
     'click',
     sendNightAction
+);
+voteBtn.addEventListener(
+    'click',
+    sendNominationVote
+);
+defenseAgreeBtn.addEventListener(
+    'click',
+    function () {
+        sendDefenseVote(true);
+    }
+);
+
+defenseDisagreeBtn.addEventListener(
+    'click',
+    function () {
+        sendDefenseVote(false);
+    }
 );
 
 

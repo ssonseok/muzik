@@ -190,12 +190,20 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         return gameEnded;
     }
 
-    private Long determineMafiaTarget(ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions) {
+    private Long determineMafiaTarget(
+            ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions) {
+
         Map<Long, Integer> mafiaVoteCount = new HashMap<>();
 
         for (MafiaNightActionRequestDto action : roomActions.values()) {
-            if (action.getActionType() == MafiaNightActionRequestDto.ActionType.MAFIA_KILL) {
-                mafiaVoteCount.put(action.getTargetId(), mafiaVoteCount.getOrDefault(action.getTargetId(), 0) + 1);
+
+            if (action.getActionType()
+                    == MafiaNightActionRequestDto.ActionType.MAFIA_KILL) {
+
+                mafiaVoteCount.put(
+                        action.getTargetId(),
+                        mafiaVoteCount.getOrDefault(action.getTargetId(), 0) + 1
+                );
             }
         }
 
@@ -203,7 +211,19 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
             return null;
         }
 
-        return Collections.max(mafiaVoteCount.entrySet(), Map.Entry.comparingByValue()).getKey();
+        int maxVotes = Collections.max(mafiaVoteCount.values());
+
+        List<Long> maxVoteTargets = mafiaVoteCount.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() == maxVotes)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        if (maxVoteTargets.size() > 1) {
+            return null;
+        }
+
+        return maxVoteTargets.get(0);
     }
 
     private Long getDoctorTarget(ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions) {
@@ -473,23 +493,59 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         }
 
         executionTargets.put(roomId, electedTargetId);
-        log.info("방 [{}] 1차 투표 결과 최다 득표자 선정: ID [{}] ({}표)", roomId, electedTargetId, maxVotes);
+        final Long targetId = electedTargetId;
+
+
+        GameParticipant target =
+                gameParticipantRepository.findByIdWithUser(targetId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "처형 후보자를 찾을 수 없습니다: " + targetId
+                                ));
+
+        String nickname =
+                target.getUser().getNickname();
+
+        messagingTemplate.convertAndSend(
+                "/sub/room/" + roomId + "/game",
+                Map.of(
+                        "type", "DEFENSE_START",
+                        "message",
+                        nickname + "님의 최후 반론 시간입니다."
+                )
+        );
     }
 
     private boolean processDefenseResult(Long roomId) {
-        ConcurrentHashMap<Long, Boolean> roomDefenseVotes = defenseVotes.remove(roomId);
-        Long targetId = executionTargets.remove(roomId);
+
+        ConcurrentHashMap<Long, Boolean> roomDefenseVotes =
+                defenseVotes.remove(roomId);
+
+        Long targetId =
+                executionTargets.remove(roomId);
 
         if (targetId == null) {
-            log.info("방 [{}]에 처형 후보자가 없습니다.", roomId);
             return false;
         }
+
+        GameParticipant target =
+                gameParticipantRepository.findByIdWithUser(targetId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "처형 대상 참여자를 찾을 수 없습니다."
+                                )
+                        );
+
+        String nickname =
+                target.getUser().getNickname();
 
         int agreeCount = 0;
         int disagreeCount = 0;
 
         if (roomDefenseVotes != null) {
+
             for (boolean isAgree : roomDefenseVotes.values()) {
+
                 if (isAgree) {
                     agreeCount++;
                 } else {
@@ -498,18 +554,30 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
             }
         }
 
-        log.info("방 [{}] 찬반 투표 집계 - 찬성(처형): {}표, 반대(생존): {}표", roomId, agreeCount, disagreeCount);
-
         if (agreeCount > disagreeCount) {
-            GameParticipant target = gameParticipantRepository.findById(targetId)
-                    .orElseThrow(() -> new IllegalArgumentException("처형 대상 참여자를 찾을 수 없습니다: " + targetId));
 
             target.die();
+
             gameParticipantRepository.save(target);
 
-            log.info("방 [{}] 투표 결과: 유죄 확정. 참여자 ID [{}] 처형 집행 완료.", roomId, targetId);
+            messagingTemplate.convertAndSend(
+                    "/sub/room/" + roomId + "/game",
+                    Map.of(
+                            "type", "EXECUTION_RESULT",
+                            "message",
+                            nickname + "님이 처형되었습니다."
+                    )
+            );
+
         } else {
-            log.info("방 [{}] 투표 결과: 무죄 방면. 과반수 찬성을 얻지 못해 아무도 처형되지 않습니다.", roomId);
+            messagingTemplate.convertAndSend(
+                    "/sub/room/" + roomId + "/game",
+                    Map.of(
+                            "type", "EXECUTION_RESULT",
+                            "message",
+                            nickname + "님은 처형되지 않았습니다."
+                    )
+            );
         }
 
         return checkGameEndCondition(roomId);
