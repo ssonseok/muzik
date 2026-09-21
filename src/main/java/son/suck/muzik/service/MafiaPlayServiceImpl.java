@@ -443,6 +443,13 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         return executionTargets.containsKey(roomId);
     }
 
+    @Override
+    public boolean isExecutionTarget(Long roomId, Long participantId) {
+        Long targetId = executionTargets.get(roomId);
+
+        return targetId != null && targetId.equals(participantId);
+    }
+
     // ==================================================================
     // 내부 정산 헬퍼 메서드
     // ===================================================================

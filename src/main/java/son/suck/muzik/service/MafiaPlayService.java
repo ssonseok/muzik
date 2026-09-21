@@ -22,4 +22,6 @@ public interface MafiaPlayService {
     boolean checkGameEndCondition(Long roomId);
     // 처형 후보자가 선정되었는지 확인하는 메서드 추가
     boolean hasExecutionTarget(Long roomId);
+    //페이즈때 권한있는 유저들만 채팅칠수있게 하려고
+    boolean isExecutionTarget(Long roomId, Long participantId);
 }

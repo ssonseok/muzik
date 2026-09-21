@@ -853,6 +853,9 @@ function handlePhase(data) {
     switch (phase) {
 
         case 'WAITING':
+
+            setGeneralChatState(true);
+
             gameMessage.textContent =
                 '게임이 곧 시작됩니다.';
 
@@ -864,6 +867,9 @@ function handlePhase(data) {
 
             // 밤이 새로 시작될 때 능력 버튼 초기화
             nightActionBtn.disabled = false;
+
+            // 밤에는 공용 채팅 금지
+            setGeneralChatState(false);
 
             if (!isFirstNight) {
                 currentDay++;
@@ -889,6 +895,9 @@ function handlePhase(data) {
 
         case 'DAY': {
 
+            // 낮에는 공용 채팅 가능
+            setGeneralChatState(true);
+
             dayArea.style.display = 'block';
 
             gameMessage.textContent =
@@ -910,6 +919,9 @@ function handlePhase(data) {
 
 
         case 'VOTE': {
+
+            // 투표 중에도 공용 채팅 가능
+            setGeneralChatState(true);
 
             // 새로운 투표 시작
             voteBtn.disabled = false;
@@ -938,6 +950,9 @@ function handlePhase(data) {
 
         case 'DEFENSE':
 
+            // 일단 후보 여부에 따라 아래에서 결정
+            setGeneralChatState(false);
+
             // 새로운 반론 시작
             defenseAgreeBtn.disabled = false;
             defenseDisagreeBtn.disabled = false;
@@ -957,8 +972,24 @@ function handlePhase(data) {
 
 
         default:
+
+            setGeneralChatState(false);
+
             timer.textContent = '-';
+
             break;
+    }
+}
+function setGeneralChatState(enabled) {
+
+    chatInput.disabled = !enabled;
+
+    if (!enabled) {
+        chatInput.placeholder =
+            '현재는 전체 채팅을 사용할 수 없습니다.';
+    } else {
+        chatInput.placeholder =
+            '메시지를 입력하세요.';
     }
 }
 async function loadVoteTargets() {
@@ -1053,6 +1084,10 @@ function handleGameMessage(data) {
 
             addGameLog(
                 `⚖️ ${data.message}`
+            );
+
+            setGeneralChatState(
+                defenseTargetNickname === myNickname.textContent
             );
 
             break;
