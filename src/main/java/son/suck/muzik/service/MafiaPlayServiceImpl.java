@@ -396,46 +396,125 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
     @Override
     @Transactional
     public boolean checkGameEndCondition(Long roomId) {
-        GameRoom room = findRoom(roomId);
-        List<GameParticipant> participants = gameParticipantRepository.findByGameRoomId(roomId);
 
-        // 살아있는 마피아 수 계산
+        GameRoom room = findRoom(roomId);
+
+        List<GameParticipant> participants =
+                gameParticipantRepository.findByGameRoomIdWithUser(roomId);
+
+        // 살아있는 마피아 수
         long aliveMafiaCount = participants.stream()
                 .filter(GameParticipant::isAlive)
                 .filter(p -> p.getMafiaRole() == Mafia_Role.MAFIA)
                 .count();
 
-        // 살아있는 총 생존자 수 계산
+        // 전체 생존자 수
         long totalAliveCount = participants.stream()
                 .filter(GameParticipant::isAlive)
                 .count();
 
-        long aliveCitizenCount = totalAliveCount - aliveMafiaCount;
+        // 살아있는 시민 팀 수
+        long aliveCitizenCount =
+                totalAliveCount - aliveMafiaCount;
 
         boolean isEnd = false;
 
+        String winner = null;
+        String message = null;
+
         if (aliveMafiaCount == 0) {
-            log.info("방 [{}] 게임 종료: 마피아가 모두 전멸하여 시민 팀이 승리했습니다!", roomId);
-            isEnd = true;
-        } else if (aliveMafiaCount >= aliveCitizenCount) {
-            log.info("방 [{}] 게임 종료: 마피아 수({})가 시민 수({}) 이상이 되어 마피아 팀이 승리했습니다!", roomId, aliveMafiaCount, aliveCitizenCount);
-            isEnd = true;
-        }
 
-        if (isEnd) {
-            room.updateStatus("end");
-            room.updatePhase(GamePhase.END);
-            gameRoomRepository.save(room);
+            isEnd = true;
+            winner = "CITIZEN";
+            message = "시민 팀이 승리했습니다.";
 
-            messagingTemplate.convertAndSend(
-                    "/sub/room/" + roomId + "/game-end",
-                    Map.of("gamePhase", GamePhase.END)
+            log.info(
+                    "방 [{}] 게임 종료: 시민 팀 승리",
+                    roomId
             );
 
-            return true;
+        } else if (aliveMafiaCount >= aliveCitizenCount) {
+
+            isEnd = true;
+            winner = "MAFIA";
+            message = "마피아 팀이 승리했습니다.";
+
+            log.info(
+                    "방 [{}] 게임 종료: 마피아 팀 승리",
+                    roomId
+            );
         }
 
-        return false;
+        if (!isEnd) {
+            return false;
+        }
+
+        // ============================
+        // 게임 종료 상태 변경
+        // ============================
+
+        room.updateStatus("end");
+        room.updatePhase(GamePhase.END);
+
+        gameRoomRepository.save(room);
+
+
+        // ============================
+        // 최종 참가자 결과 생성
+        // ============================
+
+        List<Map<String, Object>> results =
+                participants.stream()
+                        .map(participant -> {
+
+                            Map<String, Object> result =
+                                    new HashMap<>();
+
+                            result.put(
+                                    "participantId",
+                                    participant.getId()
+                            );
+
+                            result.put(
+                                    "nickname",
+                                    participant.getUser().getNickname()
+                            );
+
+                            result.put(
+                                    "role",
+                                    participant.getMafiaRole()
+                            );
+
+                            result.put(
+                                    "alive",
+                                    participant.isAlive()
+                            );
+
+                            result.put(
+                                    "score",
+                                    participant.getCurrentScore()
+                            );
+
+                            return result;
+                        })
+                        .toList();
+
+
+        // ============================
+        // 게임 종료 결과 전송
+        // ============================
+
+        messagingTemplate.convertAndSend(
+                "/sub/room/" + roomId + "/game-end",
+                Map.of(
+                        "gamePhase", GamePhase.END,
+                        "winner", winner,
+                        "message", message,
+                        "results", results
+                )
+        );
+
+        return true;
     }
 
     @Override

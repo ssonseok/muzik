@@ -831,6 +831,17 @@ function subscribeRoom() {
             handleChatMessage(data);
         }
     );
+    stompClient.subscribe(
+        `/sub/room/${roomId}/game-end`,
+        function (message) {
+
+            const data = JSON.parse(message.body);
+
+            console.log('게임 종료:', data);
+
+            handleGameEnd(data);
+        }
+    );
 
     console.log('방 구독 완료:', roomId);
 }
@@ -979,6 +990,63 @@ function handlePhase(data) {
 
             break;
     }
+}
+function handleGameEnd(data) {
+
+    console.log('최종 게임 결과:', data);
+
+    gamePhase.textContent = 'END';
+
+    timer.textContent = '-';
+
+    hideAllGameAreas();
+
+    // 게임 종료 메시지
+    gameMessage.textContent =
+        data.message || '게임이 종료되었습니다.';
+
+    // 게임 로그
+    addGameLog(
+        `🏆 ${data.message}`
+    );
+
+    // ============================
+    // 최종 결과 출력
+    // ============================
+
+    if (!data.results || data.results.length === 0) {
+        return;
+    }
+
+    let resultMessage = '';
+
+    resultMessage += '━━━━━━━━━━━━━━\n';
+    resultMessage += '🏆 최종 게임 결과\n';
+    resultMessage += '━━━━━━━━━━━━━━\n';
+
+    resultMessage += `승리 팀: ${
+        data.winner === 'MAFIA'
+            ? '마피아 팀'
+            : '시민 팀'
+    }\n\n`;
+
+    data.results.forEach(player => {
+
+        const aliveText =
+            player.alive
+                ? '생존'
+                : '사망';
+
+        resultMessage +=
+            `${player.nickname} → ` +
+            `${player.role} / ` +
+            `${aliveText}\n`;
+    });
+
+    resultMessage +=
+        '━━━━━━━━━━━━━━';
+
+    addGameLog(resultMessage);
 }
 function setGeneralChatState(enabled) {
 

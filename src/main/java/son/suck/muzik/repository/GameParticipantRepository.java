@@ -26,4 +26,14 @@ public interface GameParticipantRepository extends JpaRepository<GameParticipant
     Optional<GameParticipant> findByIdWithUser(
             @Param("participantId") Long participantId
     );
+    //최종결과(생존여부,직업,닉네임 등등)
+    @Query("""
+    select gp
+    from GameParticipant gp
+    join fetch gp.user
+    where gp.gameRoom.id = :roomId
+""")
+    List<GameParticipant> findByGameRoomIdWithUser(
+            @Param("roomId") Long roomId
+    );
 }
