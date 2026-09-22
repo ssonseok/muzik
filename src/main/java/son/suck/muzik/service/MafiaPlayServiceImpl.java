@@ -453,7 +453,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         // 게임 종료 상태 변경
         // ============================
 
-        room.updateStatus("end");
+        room.updateStatus("END");
         room.updatePhase(GamePhase.END);
 
         gameRoomRepository.save(room);
@@ -527,6 +527,15 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         Long targetId = executionTargets.get(roomId);
 
         return targetId != null && targetId.equals(participantId);
+    }
+
+    @Override
+    public void resetGameData(Long roomId) {
+
+        nightActionStore.remove(roomId);
+        nominationVotes.remove(roomId);
+        executionTargets.remove(roomId);
+        defenseVotes.remove(roomId);
     }
 
     // ==================================================================

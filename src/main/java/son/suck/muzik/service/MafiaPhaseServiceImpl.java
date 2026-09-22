@@ -63,9 +63,12 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
         scheduleNextPhase(roomId, 30, () -> {
             boolean gameEnded = mafiaPlayService.calculateNightResult(roomId);
 
-            if (!gameEnded) {
-                startDayPhase(roomId, participantCount);
+            if (gameEnded) {
+                stopTimer(roomId);
+                return;
             }
+
+            startDayPhase(roomId, participantCount);
         });
     }
 
@@ -110,9 +113,12 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
         scheduleNextPhase(roomId, duration, () -> {
             boolean gameEnded = mafiaPlayService.calculateDayResult(roomId);
 
-            if (!gameEnded) {
-                startNightPhase(roomId, participantCount);
+            if (gameEnded) {
+                stopTimer(roomId);
+                return;
             }
+
+            startNightPhase(roomId, participantCount);
         });
     }
 

@@ -73,4 +73,11 @@ public class GameParticipant {
     public void useSoldierShield() {
         this.isSoldierShieldUsed = true;
     }
+    //다시하기 역할,군인쉴드등등 초기화
+    public void resetGameState() {
+        this.mafiaRole = null;
+        this.isAlive = true;
+        this.isSoldierShieldUsed = false;
+        this.currentScore = 0;
+    }
 }

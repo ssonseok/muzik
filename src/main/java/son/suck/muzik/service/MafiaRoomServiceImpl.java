@@ -26,6 +26,7 @@ public class MafiaRoomServiceImpl implements MafiaRoomService {
     private final UsersRepository usersRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final SimpMessagingTemplate messagingTemplate;
+    private final MafiaPlayService mafiaPlayService;
 
     @Override
     @Transactional
@@ -249,5 +250,56 @@ public class MafiaRoomServiceImpl implements MafiaRoomService {
                         participant.isHost()
                 ))
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void restartGame(Long roomId, Long hostUserId) {
+
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("존재하지 않는 방입니다.")
+                );
+
+        boolean isHost = gameRoom.getParticipants().stream()
+                .anyMatch(p ->
+                        p.getUser().getId().equals(hostUserId)
+                                && p.isHost()
+                );
+
+        if (!isHost) {
+            throw new IllegalStateException(
+                    "방장만 게임을 다시 시작할 수 있습니다."
+            );
+        }
+
+        if (!"END".equals(gameRoom.getRoomStatus())) {
+            throw new IllegalStateException(
+                    "종료된 게임만 다시 시작할 수 있습니다."
+            );
+        }
+
+        int totalPlayers = gameRoom.getParticipants().size();
+
+        if (totalPlayers < 4) {
+            throw new IllegalStateException(
+                    "게임을 다시 시작하려면 최소 4명의 인원이 필요합니다."
+            );
+        }
+
+        if (totalPlayers > 12) {
+            throw new IllegalStateException(
+                    "게임 최대 인원은 12명입니다."
+            );
+        }
+
+        gameRoom.updateStatus("WAITING");
+        gameRoom.updatePhase(GamePhase.WAITING);
+
+        for (GameParticipant participant : gameRoom.getParticipants()) {
+            participant.resetGameState();
+        }
+        mafiaPlayService.resetGameData(roomId);
+        gameRoomRepository.save(gameRoom);
     }
 }

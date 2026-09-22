@@ -24,4 +24,6 @@ public interface MafiaPlayService {
     boolean hasExecutionTarget(Long roomId);
     //페이즈때 권한있는 유저들만 채팅칠수있게 하려고
     boolean isExecutionTarget(Long roomId, Long participantId);
+    //다시시작
+    void resetGameData(Long roomId);
 }

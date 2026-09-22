@@ -18,4 +18,5 @@ public interface MafiaRoomService {
     //직업,생존상태조회
     MafiaMyInfoResponse getMyInfo(Long roomId, Long userId);
     List<MafiaParticipantResponse> getParticipants(Long roomId);
+    void restartGame(Long roomId, Long hostUserId);
 }

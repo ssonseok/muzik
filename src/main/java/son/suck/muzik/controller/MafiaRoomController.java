@@ -68,6 +68,16 @@ public class MafiaRoomController {
         mafiaRoomService.startGame(roomId, userId);
         return ResponseEntity.ok().build();
     }
+    // 게임 다시 시작
+    @PostMapping("/{roomId}/restart")
+    public ResponseEntity<Void> restartGame(
+            @PathVariable Long roomId,
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
+
+        mafiaRoomService.restartGame(roomId, userId);
+
+        return ResponseEntity.ok().build();
+    }
     // 내 직업 및 방 상태 조회
     @GetMapping("/{roomId}/my-info")
     public ResponseEntity<MafiaMyInfoResponse> getMyInfo(

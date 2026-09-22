@@ -93,6 +93,7 @@ let stompClient = null;
 let timerInterval = null;
 let myRoleValue = null;
 let selectedTargetId = null;
+let isMyHost = false;
 
 // ================================
 // 내 정보 조회
@@ -403,7 +404,6 @@ function renderMyInfo(data) {
     myNickname.textContent = data.nickname;
     myInfoNickname.textContent = data.nickname;
     myAliveStatus.textContent = data.alive ? '생존' : '사망';
-
     myRoleValue = data.mafiaRole;
 
     // ================================
@@ -514,8 +514,10 @@ function renderMyInfo(data) {
     // ================================
 
     if (data.host) {
+        isMyHost = true;
         hostArea.style.display = 'block';
     } else {
+        isMyHost = false;
         hostArea.style.display = 'none';
     }
 
@@ -529,6 +531,8 @@ function renderMyInfo(data) {
 
     renderNightAction();
 }
+
+
 function handlePoliceInvestigationResult(data) {
 
     if (!data) {
@@ -961,8 +965,7 @@ function handlePhase(data) {
 
         case 'DEFENSE':
 
-            // 일단 후보 여부에 따라 아래에서 결정
-            setGeneralChatState(false);
+            setGeneralChatState(true);
 
             // 새로운 반론 시작
             defenseAgreeBtn.disabled = false;
@@ -994,9 +997,9 @@ function handlePhase(data) {
 function handleGameEnd(data) {
 
     console.log('최종 게임 결과:', data);
+    console.log('게임 종료 시점 isMyHost:', isMyHost);
 
     gamePhase.textContent = 'END';
-
     timer.textContent = '-';
 
     hideAllGameAreas();
@@ -1014,39 +1017,56 @@ function handleGameEnd(data) {
     // 최종 결과 출력
     // ============================
 
-    if (!data.results || data.results.length === 0) {
-        return;
-    }
+    if (data.results && data.results.length > 0) {
 
-    let resultMessage = '';
+        let resultMessage = '';
 
-    resultMessage += '━━━━━━━━━━━━━━\n';
-    resultMessage += '🏆 최종 게임 결과\n';
-    resultMessage += '━━━━━━━━━━━━━━\n';
+        resultMessage += '━━━━━━━━━━━━━━\n';
+        resultMessage += '🏆 최종 게임 결과\n';
+        resultMessage += '━━━━━━━━━━━━━━\n';
 
-    resultMessage += `승리 팀: ${
-        data.winner === 'MAFIA'
-            ? '마피아 팀'
-            : '시민 팀'
-    }\n\n`;
+        resultMessage += `승리 팀: ${
+            data.winner === 'MAFIA'
+                ? '마피아 팀'
+                : '시민 팀'
+        }\n\n`;
 
-    data.results.forEach(player => {
+        data.results.forEach(player => {
 
-        const aliveText =
-            player.alive
-                ? '생존'
-                : '사망';
+            const aliveText =
+                player.alive
+                    ? '생존'
+                    : '사망';
+
+            resultMessage +=
+                `${player.nickname} → ` +
+                `${player.role} / ` +
+                `${aliveText}\n`;
+        });
 
         resultMessage +=
-            `${player.nickname} → ` +
-            `${player.role} / ` +
-            `${aliveText}\n`;
-    });
+            '━━━━━━━━━━━━━━';
 
-    resultMessage +=
-        '━━━━━━━━━━━━━━';
+        addGameLog(resultMessage);
+    }
+    console.log('버튼 표시 직전 isMyHost:', isMyHost);
 
-    addGameLog(resultMessage);
+    // ============================
+    // 다시 게임 시작
+    // ============================
+
+    if (isMyHost) {
+
+        startGameBtn.style.display = 'block';
+        startGameBtn.disabled = false;
+        startGameBtn.textContent = '다시 게임 시작';
+        console.log('방장 버튼 표시 완료');
+
+    } else {
+
+        startGameBtn.style.display = 'none';
+        console.log('방장이 아니므로 버튼 숨김');
+    }
 }
 function setGeneralChatState(enabled) {
 
@@ -1312,6 +1332,56 @@ async function startGame() {
         alert('게임 시작 중 오류가 발생했습니다.');
     }
 }
+async function restartGame() {
+
+    console.log('=== restartGame 호출 ===');
+    console.log('accessToken 존재:', !!accessToken);
+    console.log('roomId:', roomId);
+
+    try {
+        const response = await fetch(
+            `${ROOMS_API}/${roomId}/restart`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        console.log('restart 응답 상태:', response.status);
+
+        if (!response.ok) {
+            const message = await response.text();
+
+            console.log('restart 응답 내용:', message);
+
+            throw new Error(
+                message || '게임 재시작에 실패했습니다.'
+            );
+        }
+
+        console.log('게임 재시작 성공');
+
+        currentDay = 1;
+        isFirstNight = true;
+
+        startGameBtn.disabled = false;
+        startGameBtn.textContent = '게임 시작';
+
+        loadMyInfo();
+        loadParticipants();
+
+    } catch (error) {
+        console.error('게임 재시작 실패:', error);
+
+        alert(
+            error.message ||
+            '게임 재시작 중 오류가 발생했습니다.'
+        );
+    }
+}
 
 async function sendNightAction() {
 
@@ -1460,7 +1530,15 @@ function hideAllGameAreas() {
 
 startGameBtn.addEventListener(
     'click',
-    startGame
+    function () {
+
+        if (gamePhase.textContent === 'END') {
+            restartGame();
+        } else {
+            startGame();
+        }
+
+    }
 );
 
 leaveRoomBtn.addEventListener(
