@@ -165,7 +165,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
                         Map.of(
                                 "type", "NIGHT_RESULT",
                                 "message",
-                                deadParticipant.getUser().getNickname()
+                                "💀 "+deadParticipant.getUser().getNickname()
                                         + "이(가) 밤에 사망했습니다."
                         )
                 );
@@ -604,6 +604,7 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
                 "/sub/room/" + roomId + "/game",
                 Map.of(
                         "type", "DEFENSE_START",
+                        "targetParticipantId", electedTargetId,
                         "message",
                         nickname + "님의 최후 반론 시간입니다."
                 )

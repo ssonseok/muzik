@@ -83,6 +83,7 @@ let policeSubscription = null;
 let soldierShieldSubscription = null;
 let currentDay = 1;
 let isFirstNight = true;
+let defenseTargetParticipantId = null;
 
 
 // ================================
@@ -94,6 +95,7 @@ let timerInterval = null;
 let myRoleValue = null;
 let selectedTargetId = null;
 let isMyHost = false;
+let myParticipantId = null;
 
 // ================================
 // 내 정보 조회
@@ -400,6 +402,7 @@ function addGameLog(message) {
 // 내 정보 출력
 // ================================
 function renderMyInfo(data) {
+    myParticipantId = data.participantId;
 
     myNickname.textContent = data.nickname;
     myInfoNickname.textContent = data.nickname;
@@ -965,7 +968,9 @@ function handlePhase(data) {
 
         case 'DEFENSE':
 
-            setGeneralChatState(true);
+            setGeneralChatState(
+                    defenseTargetParticipantId === myParticipantId
+                );
 
             // 새로운 반론 시작
             defenseAgreeBtn.disabled = false;
@@ -1158,6 +1163,9 @@ function handleGameMessage(data) {
 
         case 'DEFENSE_START':
 
+            defenseTargetParticipantId =
+                data.targetParticipantId;
+
             defenseTargetNickname =
                 data.message.replace(
                     '님의 최후 반론 시간입니다.',
@@ -1175,7 +1183,7 @@ function handleGameMessage(data) {
             );
 
             setGeneralChatState(
-                defenseTargetNickname === myNickname.textContent
+                defenseTargetParticipantId === myParticipantId
             );
 
             break;
