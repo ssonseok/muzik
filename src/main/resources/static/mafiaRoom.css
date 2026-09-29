@@ -1,0 +1,844 @@
+/* =========================================
+   기본 설정
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    overflow: hidden;
+
+    font-family:
+        Arial,
+        "Malgun Gothic",
+        sans-serif;
+
+    background: #0b0b0f;
+    color: #eeeeee;
+}
+
+
+/* =========================================
+   전체 게임
+========================================= */
+
+#mafiaGame {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.game-header {
+    height: 70px;
+    min-height: 70px;
+
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+
+    padding: 0 24px;
+
+    background: #111116;
+    border-bottom: 1px solid #292933;
+
+    box-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+
+/* 왼쪽 */
+
+.header-title {
+    display: flex;
+    align-items: center;
+}
+
+.header-title h1 {
+    margin: 0;
+
+    font-size: 24px;
+    letter-spacing: 2px;
+
+    color: #eeeeee;
+}
+
+
+/* 가운데 */
+
+.header-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 18px;
+}
+
+.header-status span {
+    min-width: 70px;
+
+    padding: 7px 12px;
+
+    text-align: center;
+
+    background: #191920;
+    border: 1px solid #30303a;
+    border-radius: 6px;
+
+    font-size: 14px;
+}
+
+#gamePhase {
+    color: #d6d6d6;
+}
+
+#timer {
+    font-family: monospace;
+    font-size: 15px;
+}
+
+
+/* 오른쪽 */
+
+.header-user {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 12px;
+}
+
+#myNickname {
+    color: #cfcfd6;
+    font-size: 14px;
+}
+
+#leaveRoomBtn {
+    padding: 8px 14px;
+
+    border: 1px solid #44444f;
+    border-radius: 6px;
+
+    background: #1a1a21;
+    color: #dddddd;
+
+    cursor: pointer;
+}
+
+#leaveRoomBtn:hover {
+    background: #27272f;
+}
+
+
+/* =========================================
+   MAIN
+========================================= */
+
+.game-main {
+    flex: 1;
+
+    min-height: 0;
+
+    display: grid;
+
+    /*
+        왼쪽 220px
+        가운데 360px
+        오른쪽 나머지
+    */
+    grid-template-columns:
+        220px
+        360px
+        minmax(0, 1fr);
+
+    gap: 10px;
+
+    padding: 10px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   공통 PANEL
+========================================= */
+
+.panel {
+    min-width: 0;
+    min-height: 0;
+
+    background: #121217;
+
+    border: 1px solid #292932;
+    border-radius: 8px;
+
+    overflow: hidden;
+}
+
+.panel h2 {
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    margin: 0;
+    padding: 0 15px;
+
+    background: #18181f;
+
+    border-bottom: 1px solid #292932;
+
+    font-size: 14px;
+    letter-spacing: 1px;
+
+    color: #cfcfd5;
+}
+
+
+/* =========================================
+   LEFT COLUMN
+========================================= */
+
+.left-column {
+    min-height: 0;
+
+    display: grid;
+
+    grid-template-rows:
+        minmax(0, 1fr)
+        minmax(180px, 0.8fr);
+
+    gap: 10px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   PLAYERS
+========================================= */
+
+.players-panel {
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+#playerList {
+    flex: 1;
+
+    min-height: 0;
+
+    padding: 10px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#playerList::-webkit-scrollbar,
+#chatMessages::-webkit-scrollbar,
+#mafiaChatMessages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#playerList::-webkit-scrollbar-thumb,
+#chatMessages::-webkit-scrollbar-thumb,
+#mafiaChatMessages::-webkit-scrollbar-thumb {
+    background: #3a3a45;
+    border-radius: 10px;
+}
+
+#playerList::-webkit-scrollbar-track,
+#chatMessages::-webkit-scrollbar-track,
+#mafiaChatMessages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+/* 플레이어 한 명 */
+
+#playerList > div {
+    padding: 10px 11px;
+    margin-bottom: 6px;
+
+    background: #191920;
+
+    border: 1px solid #282832;
+    border-radius: 6px;
+
+    font-size: 13px;
+
+    color: #dddddf;
+}
+
+
+/* =========================================
+   MY INFO
+========================================= */
+
+.my-info-panel {
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    padding-bottom: 12px;
+}
+
+.my-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px 14px;
+
+    font-size: 13px;
+}
+
+.my-info-row span {
+    color: #777780;
+}
+
+.my-info-row strong {
+    color: #dddddf;
+    font-weight: normal;
+}
+
+#hostArea {
+    margin-top: auto;
+
+    padding: 8px 12px 0;
+}
+
+#startGameBtn {
+    width: 100%;
+
+    padding: 11px 0;
+
+    border: 1px solid #4b4b56;
+    border-radius: 6px;
+
+    background: #22222a;
+    color: #eeeeee;
+
+    cursor: pointer;
+
+    font-size: 13px;
+}
+
+#startGameBtn:hover {
+    background: #303039;
+}
+
+
+/* =========================================
+   CENTER CHAT COLUMN
+========================================= */
+
+.chat-column {
+    min-width: 0;
+    min-height: 0;
+
+    display: grid;
+
+    /*
+        일반 CHAT
+        MAFIA CHAT
+    */
+    grid-template-rows:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 10px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   GENERAL CHAT
+========================================= */
+
+.chat-panel,
+.mafia-chat-panel {
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* 메시지 영역 */
+
+#chatMessages,
+#mafiaChatMessages {
+    flex: 1;
+
+    min-height: 0;
+
+    padding: 12px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    word-break: break-word;
+
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* 채팅 한 줄 */
+
+#chatMessages > div,
+#mafiaChatMessages > div {
+    margin-bottom: 8px;
+
+    color: #d6d6da;
+}
+
+
+/* =========================================
+   CHAT INPUT
+========================================= */
+
+.chat-input-area {
+    flex-shrink: 0;
+
+    display: flex;
+
+    gap: 6px;
+
+    padding: 8px;
+
+    background: #17171d;
+
+    border-top: 1px solid #292932;
+}
+
+.chat-input-area input {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 36px;
+
+    padding: 0 10px;
+
+    border: 1px solid #34343e;
+    border-radius: 5px;
+
+    outline: none;
+
+    background: #0f0f14;
+    color: #eeeeee;
+}
+
+.chat-input-area input:focus {
+    border-color: #555561;
+}
+
+.chat-input-area input:disabled {
+    background: #17171c;
+    color: #66666e;
+}
+
+.chat-input-area button {
+    width: 55px;
+
+    border: 1px solid #3b3b45;
+    border-radius: 5px;
+
+    background: #25252d;
+    color: #eeeeee;
+
+    cursor: pointer;
+}
+
+.chat-input-area button:hover {
+    background: #33333d;
+}
+
+.chat-input-area button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+
+/* =========================================
+   MAFIA CHAT
+========================================= */
+
+#mafiaChatArea {
+    min-height: 0;
+}
+
+
+/* =========================================
+   GAME AREA
+========================================= */
+
+.game-area-panel {
+    min-width: 0;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+
+/*
+    GAME AREA 내용 전체
+*/
+#gameMessage,
+#nightArea,
+#dayArea,
+#voteArea,
+#defenseArea {
+    flex-shrink: 0;
+}
+
+
+/* 기본 게임 메시지 */
+
+#gameMessage {
+    padding: 18px;
+
+    text-align: center;
+
+    color: #c8c8ce;
+
+    font-size: 15px;
+}
+
+
+/* =========================================
+   NIGHT
+========================================= */
+
+#nightArea {
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 30px 25px;
+}
+
+#nightArea h3 {
+    margin: 10px 0 8px;
+
+    font-size: 28px;
+}
+
+#nightTimer {
+    margin-bottom: 18px;
+
+    font-family: monospace;
+    font-size: 32px;
+
+    color: #b9b9c0;
+}
+
+#nightRoleMessage {
+    margin: 10px 0 20px;
+
+    color: #bcbcc4;
+
+    text-align: center;
+}
+
+
+/* =========================================
+   TARGET BUTTON
+========================================= */
+
+#nightTargetArea,
+#voteTargetArea {
+    width: 100%;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    gap: 8px;
+
+    margin: 10px 0 20px;
+}
+
+.target-player {
+    min-width: 90px;
+
+    padding: 10px 14px;
+
+    border: 1px solid #3b3b45;
+    border-radius: 6px;
+
+    background: #1b1b22;
+    color: #dddddf;
+
+    cursor: pointer;
+}
+
+.target-player:hover {
+    background: #292931;
+}
+
+.target-player.selected {
+    border-color: #8b8b98;
+
+    background: #3a3a44;
+
+    color: #ffffff;
+}
+
+
+/* 행동 버튼 */
+
+#nightActionBtn,
+#voteBtn {
+    min-width: 120px;
+
+    padding: 11px 20px;
+
+    border: 1px solid #4b4b56;
+    border-radius: 6px;
+
+    background: #24242c;
+    color: #eeeeee;
+
+    cursor: pointer;
+}
+
+#nightActionBtn:hover,
+#voteBtn:hover {
+    background: #33333d;
+}
+
+#nightActionBtn:disabled,
+#voteBtn:disabled {
+    opacity: 0.4;
+
+    cursor: default;
+}
+
+
+/* =========================================
+   DAY
+========================================= */
+
+#dayArea {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding-top: 70px;
+}
+
+#dayArea h3 {
+    margin: 0 0 15px;
+
+    font-size: 30px;
+}
+
+#dayTimer {
+    font-family: monospace;
+
+    font-size: 34px;
+
+    margin-bottom: 20px;
+
+    color: #c7c7cd;
+}
+
+#dayArea p {
+    color: #9999a3;
+}
+
+
+/* =========================================
+   VOTE
+========================================= */
+
+#voteArea {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 30px;
+}
+
+#voteArea h3 {
+    margin: 10px 0;
+
+    font-size: 28px;
+}
+
+#voteTimer {
+    margin-bottom: 20px;
+
+    font-family: monospace;
+
+    font-size: 32px;
+}
+
+#voteArea p {
+    color: #9999a3;
+}
+
+
+/* =========================================
+   DEFENSE
+========================================= */
+
+#defenseArea {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 50px 30px;
+}
+
+#defenseArea h3 {
+    margin: 10px 0;
+
+    font-size: 28px;
+}
+
+#defenseTimer {
+    margin-bottom: 25px;
+
+    font-family: monospace;
+
+    font-size: 32px;
+}
+
+#defenseQuestion {
+    margin: 10px 0 25px;
+
+    color: #ccccd2;
+
+    font-size: 16px;
+
+    text-align: center;
+}
+
+#defenseAgreeBtn,
+#defenseDisagreeBtn {
+    min-width: 100px;
+
+    margin: 4px;
+
+    padding: 11px 20px;
+
+    border: 1px solid #3d3d47;
+    border-radius: 6px;
+
+    background: #222229;
+    color: #eeeeee;
+
+    cursor: pointer;
+}
+
+#defenseAgreeBtn:hover,
+#defenseDisagreeBtn:hover {
+    background: #33333c;
+}
+
+#defenseAgreeBtn:disabled,
+#defenseDisagreeBtn:disabled {
+    opacity: 0.4;
+
+    cursor: default;
+}
+
+
+/* =========================================
+   PHASE별 GAME AREA
+========================================= */
+
+.game-area-panel.phase-night {
+    border-color: #3b3548;
+}
+
+.game-area-panel.phase-day {
+    border-color: #48483e;
+}
+
+.game-area-panel.phase-vote {
+    border-color: #49423a;
+}
+
+.game-area-panel.phase-defense {
+    border-color: #3d3f49;
+}
+
+
+/* =========================================
+   시민 / 마피아 채팅 상태
+========================================= */
+
+.game-main.citizen-mode .chat-column {
+    grid-template-rows: 1fr;
+}
+
+.game-main.citizen-mode #mafiaChatArea {
+    display: none !important;
+}
+
+
+/* =========================================
+   모바일 / 작은 화면
+========================================= */
+
+@media (max-width: 900px) {
+
+    .game-main {
+        grid-template-columns:
+            180px
+            300px
+            minmax(0, 1fr);
+    }
+
+    .game-header {
+        padding: 0 12px;
+    }
+
+    .header-status {
+        gap: 6px;
+    }
+
+    .header-status span {
+        min-width: 55px;
+        padding: 6px 8px;
+    }
+}

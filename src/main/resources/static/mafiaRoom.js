@@ -28,7 +28,7 @@ if (!accessToken) {
 
 const myNickname = document.getElementById('myNickname');
 
-const roomName = document.getElementById('roomName');
+//const roomName = document.getElementById('roomName');
 const playerCount = document.getElementById('playerCount');
 const gamePhase = document.getElementById('gamePhase');
 const timer = document.getElementById('timer');
@@ -70,7 +70,9 @@ const mafiaChatInput =
     document.getElementById('mafiaChatInput');
 const mafiaChatSendBtn =
     document.getElementById('mafiaChatSendBtn');
-const gameLog = document.getElementById('gameLog');
+//const gameLog = document.getElementById('gameLog');
+const gameMain = document.querySelector('.game-main');
+const gameAreaPanel = document.getElementById('gameAreaPanel');
 const defenseAgreeBtn =
     document.getElementById('defenseAgreeBtn');
 const defenseDisagreeBtn =
@@ -189,16 +191,105 @@ function startTimer(seconds) {
 
     let remainingSeconds = seconds;
 
-    timer.textContent = `${remainingSeconds}초`;
+    function updateTimer() {
+
+        const minutes =
+            Math.floor(remainingSeconds / 60);
+
+        const secondsValue =
+            remainingSeconds % 60;
+
+        const timeText =
+            `${String(minutes).padStart(2, '0')}:` +
+            `${String(secondsValue).padStart(2, '0')}`;
+
+        // ================================
+        // HEADER TIMER
+        // ================================
+
+        timer.textContent = timeText;
+
+
+        // ================================
+        // GAME AREA TIMER
+        // 현재 Phase에 맞는 타이머만 변경
+        // ================================
+
+        switch (gamePhase.textContent) {
+
+            case 'NIGHT':
+
+                document.getElementById('nightTimer')
+                    .textContent = timeText;
+
+                break;
+
+
+            case 'DAY':
+
+                document.getElementById('dayTimer')
+                    .textContent = timeText;
+
+                break;
+
+
+            case 'VOTE':
+
+                document.getElementById('voteTimer')
+                    .textContent = timeText;
+
+                break;
+
+
+            case 'DEFENSE':
+
+                document.getElementById('defenseTimer')
+                    .textContent = timeText;
+
+                break;
+        }
+    }
+
+
+    // 시작하자마자 한 번 표시
+    updateTimer();
+
 
     timerInterval = setInterval(() => {
 
         remainingSeconds--;
 
-        timer.textContent = `${remainingSeconds}초`;
+        updateTimer();
+
 
         if (remainingSeconds <= 0) {
+
             clearInterval(timerInterval);
+
+            timer.textContent = '00:00';
+
+            switch (gamePhase.textContent) {
+
+                case 'NIGHT':
+                    document.getElementById('nightTimer')
+                        .textContent = '00:00';
+                    break;
+
+                case 'DAY':
+                    document.getElementById('dayTimer')
+                        .textContent = '00:00';
+                    break;
+
+                case 'VOTE':
+                    document.getElementById('voteTimer')
+                        .textContent = '00:00';
+                    break;
+
+                case 'DEFENSE':
+                    document.getElementById('defenseTimer')
+                        .textContent = '00:00';
+                    break;
+            }
         }
 
     }, 1000);
@@ -348,8 +439,9 @@ function renderVoteTargets(participants) {
             return;
         }
 
-        const button =
-            document.createElement('button');
+        const button = document.createElement('button');
+
+        button.classList.add('target-player');
 
         button.textContent =
             participant.nickname;
@@ -370,13 +462,13 @@ function renderVoteTargets(participants) {
 
                 // 선택된 버튼 표시
                 const buttons =
-                    voteTargetArea.querySelectorAll('button');
+                    voteTargetArea.querySelectorAll('.target-player');
 
                 buttons.forEach(btn => {
-                    btn.style.fontWeight = 'normal';
+                    btn.classList.remove('selected');
                 });
 
-                button.style.fontWeight = 'bold';
+                button.classList.add('selected');
             }
         );
 
@@ -384,17 +476,32 @@ function renderVoteTargets(participants) {
     });
 }
 
-function addGameLog(message) {
+//function addGameLog(message) {
+//
+//    const logElement =
+//        document.createElement('div');
+//
+//    logElement.textContent = message;
+//
+//    gameLog.appendChild(logElement);
+//
+//    gameLog.scrollTop =
+//        gameLog.scrollHeight;
+//}
+function addSystemChat(message) {
 
-    const logElement =
+    const messageElement =
         document.createElement('div');
 
-    logElement.textContent = message;
+    messageElement.textContent =
+        message;
 
-    gameLog.appendChild(logElement);
+    messageElement.style.fontWeight = 'bold';
 
-    gameLog.scrollTop =
-        gameLog.scrollHeight;
+    chatMessages.appendChild(messageElement);
+
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
 }
 
 
@@ -415,7 +522,10 @@ function renderMyInfo(data) {
 
     if (data.mafiaRole === 'MAFIA') {
 
-        mafiaChatArea.style.display = 'block';
+        // 마피아 화면
+        gameMain.classList.remove('citizen-mode');
+
+        mafiaChatArea.style.display = 'flex';
 
         if (!mafiaChatSubscription &&
             stompClient &&
@@ -443,10 +553,13 @@ function renderMyInfo(data) {
 
     } else {
 
+        // 시민 화면
+        gameMain.classList.add('citizen-mode');
+
         mafiaChatArea.style.display = 'none';
 
-        mafiaChatInput.disabled = false;
-        mafiaChatSendBtn.disabled = false;
+        mafiaChatInput.disabled = true;
+        mafiaChatSendBtn.disabled = true;
     }
 
     // ================================
@@ -691,6 +804,7 @@ async function loadParticipantsForNight() {
                     document.createElement('button');
 
                 button.type = 'button';
+                button.classList.add('target-player');
 
                 button.textContent =
                     participant.nickname;
@@ -867,6 +981,13 @@ function handlePhase(data) {
     gamePhase.textContent = phase;
 
     hideAllGameAreas();
+    gameAreaPanel.classList.remove(
+        'phase-night',
+        'phase-day',
+        'phase-vote',
+        'phase-defense'
+    );
+
 
     switch (phase) {
 
@@ -882,7 +1003,7 @@ function handlePhase(data) {
 
 
         case 'NIGHT':
-
+            gameAreaPanel.classList.add('phase-night');
             // 밤이 새로 시작될 때 능력 버튼 초기화
             nightActionBtn.disabled = false;
 
@@ -900,7 +1021,7 @@ function handlePhase(data) {
             gameMessage.textContent =
                 '밤이 되었습니다.';
 
-            addGameLog(
+            addSystemChat(
                 `🌙 ${currentDay}일차 밤이 시작되었습니다.`
             );
 
@@ -912,7 +1033,7 @@ function handlePhase(data) {
 
 
         case 'DAY': {
-
+            gameAreaPanel.classList.add('phase-day');
             // 낮에는 공용 채팅 가능
             setGeneralChatState(true);
 
@@ -921,7 +1042,7 @@ function handlePhase(data) {
             gameMessage.textContent =
                 '낮이 되었습니다. 토론을 시작하세요.';
 
-            addGameLog(
+            addSystemChat(
                 `☀️ ${currentDay}일차 낮이 시작되었습니다.`
             );
 
@@ -937,7 +1058,7 @@ function handlePhase(data) {
 
 
         case 'VOTE': {
-
+            gameAreaPanel.classList.add('phase-vote');
             // 투표 중에도 공용 채팅 가능
             setGeneralChatState(true);
 
@@ -951,7 +1072,7 @@ function handlePhase(data) {
 
             loadVoteTargets();
 
-            addGameLog(
+            addSystemChat(
                 `🗳️ ${currentDay}일차 투표가 시작되었습니다.`
             );
 
@@ -967,7 +1088,7 @@ function handlePhase(data) {
 
 
         case 'DEFENSE':
-
+            gameAreaPanel.classList.add('phase-defense');
             setGeneralChatState(
                     defenseTargetParticipantId === myParticipantId
                 );
@@ -981,7 +1102,7 @@ function handlePhase(data) {
             gameMessage.textContent =
                 '찬반 투표를 진행합니다.';
 
-            addGameLog(
+            addSystemChat(
                 `⚖️ ${currentDay}일차 반론이 시작되었습니다.`
             );
 
@@ -1014,7 +1135,7 @@ function handleGameEnd(data) {
         data.message || '게임이 종료되었습니다.';
 
     // 게임 로그
-    addGameLog(
+    addSystemChat(
         `🏆 ${data.message}`
     );
 
@@ -1052,7 +1173,7 @@ function handleGameEnd(data) {
         resultMessage +=
             '━━━━━━━━━━━━━━';
 
-        addGameLog(resultMessage);
+        addSystemChat(resultMessage);
     }
     console.log('버튼 표시 직전 isMyHost:', isMyHost);
 
@@ -1146,7 +1267,7 @@ function handleGameMessage(data) {
             gameMessage.textContent =
                 data.message || '밤 결과가 발표되었습니다.';
 
-            addGameLog(
+            addSystemChat(
                 data.message || '밤 결과가 발표되었습니다.'
             );
 
@@ -1178,7 +1299,7 @@ function handleGameMessage(data) {
             gameMessage.textContent =
                 data.message;
 
-            addGameLog(
+            addSystemChat(
                 `⚖️ ${data.message}`
             );
 
@@ -1192,7 +1313,7 @@ function handleGameMessage(data) {
             gameMessage.textContent =
                 data.message;
 
-            addGameLog(
+            addSystemChat(
                 data.message
             );
 
