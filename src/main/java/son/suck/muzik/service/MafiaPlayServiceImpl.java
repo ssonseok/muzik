@@ -15,6 +15,8 @@ import son.suck.muzik.dto.MafiaVoteRequestDto;
 import son.suck.muzik.dto.PoliceInvestigationResultResponseDto;
 import son.suck.muzik.repository.GameParticipantRepository;
 import son.suck.muzik.repository.GameRoomRepository;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -120,13 +122,9 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
     @Override
     @Transactional
     public boolean calculateNightResult(Long roomId) {
-        System.out.println("🔥 calculateNightResult 호출됨! roomId = " + roomId);
 
         ConcurrentHashMap<Long, MafiaNightActionRequestDto> roomActions =
                 nightActionStore.get(roomId);
-        System.out.println("🔥 roomActions = " + roomActions);
-        System.out.println("🔥 roomActions size = " +
-                (roomActions == null ? "null" : roomActions.size()));
 
         if (roomActions == null || roomActions.isEmpty()) {
             nightActionStore.remove(roomId);
@@ -135,11 +133,9 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
         Long mafiaTargetId =
                 determineMafiaTarget(roomActions);
-        System.out.println("🔥 mafiaTargetId = " + mafiaTargetId);
 
         Long doctorTargetId =
                 getDoctorTarget(roomActions);
-        System.out.println("🔥 doctorTargetId = " + doctorTargetId);
 
         processPoliceInvestigation(roomActions);
 
@@ -149,9 +145,10 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
                         mafiaTargetId,
                         doctorTargetId
                 );
-        System.out.println("🔥 deadParticipantId = " + deadParticipantId);
 
         // 밤 결과 전송
+        String nightResultMessage;
+
         if (deadParticipantId != null) {
 
             GameParticipant deadParticipant =
@@ -159,25 +156,45 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
                             .orElse(null);
 
             if (deadParticipant != null) {
-
-                messagingTemplate.convertAndSend(
-                        "/sub/room/" + roomId + "/game",
-                        Map.of(
-                                "type", "NIGHT_RESULT",
-                                "message",
-                                "💀 "+deadParticipant.getUser().getNickname()
-                                        + "이(가) 밤에 사망했습니다."
-                        )
-                );
+                nightResultMessage =
+                        "💀 " + deadParticipant.getUser().getNickname()
+                                + "이(가) 밤에 사망했습니다.";
+            } else {
+                nightResultMessage = "오늘 밤은 아무도 사망하지 않았습니다.";
             }
 
         } else {
+            nightResultMessage = "오늘 밤은 아무도 사망하지 않았습니다.";
+        }
 
+        String finalNightResultMessage = nightResultMessage;
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+
+                        @Override
+                        public void afterCommit() {
+                            messagingTemplate.convertAndSend(
+                                    "/sub/room/" + roomId + "/game",
+                                    Map.of(
+                                            "type", "NIGHT_RESULT",
+                                            "message", finalNightResultMessage
+                                    )
+                            );
+                        }
+                    }
+            );
+
+        } else {
+
+            // 혹시 트랜잭션 밖에서 호출되는 경우
             messagingTemplate.convertAndSend(
                     "/sub/room/" + roomId + "/game",
                     Map.of(
                             "type", "NIGHT_RESULT",
-                            "message", "오늘 밤은 아무도 사망하지 않았습니다."
+                            "message", finalNightResultMessage
                     )
             );
         }
@@ -504,15 +521,35 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
         // 게임 종료 결과 전송
         // ============================
 
-        messagingTemplate.convertAndSend(
-                "/sub/room/" + roomId + "/game-end",
-                Map.of(
-                        "gamePhase", GamePhase.END,
-                        "winner", winner,
-                        "message", message,
-                        "results", results
-                )
+        Map<String, Object> gameEndMessage = Map.of(
+                "gamePhase", GamePhase.END,
+                "winner", winner,
+                "message", message,
+                "results", results
         );
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+
+                        @Override
+                        public void afterCommit() {
+                            messagingTemplate.convertAndSend(
+                                    "/sub/room/" + roomId + "/game-end",
+                                    gameEndMessage
+                            );
+                        }
+                    }
+            );
+
+        } else {
+
+            messagingTemplate.convertAndSend(
+                    "/sub/room/" + roomId + "/game-end",
+                    gameEndMessage
+            );
+        }
 
         return true;
     }
@@ -614,35 +651,30 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
 
     private boolean processDefenseResult(Long roomId) {
 
-        ConcurrentHashMap<Long, Boolean> roomDefenseVotes =
+        ConcurrentHashMap<Long, Boolean> roomVotes =
                 defenseVotes.remove(roomId);
 
-        Long targetId =
+        Long targetParticipantId =
                 executionTargets.remove(roomId);
 
-        if (targetId == null) {
+        if (targetParticipantId == null) {
             return false;
         }
 
         GameParticipant target =
-                gameParticipantRepository.findByIdWithUser(targetId)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "처형 대상 참여자를 찾을 수 없습니다."
-                                )
-                        );
+                gameParticipantRepository.findByIdWithUser(targetParticipantId)
+                        .orElse(null);
 
-        String nickname =
-                target.getUser().getNickname();
+        if (target == null) {
+            return false;
+        }
 
         int agreeCount = 0;
         int disagreeCount = 0;
 
-        if (roomDefenseVotes != null) {
-
-            for (boolean isAgree : roomDefenseVotes.values()) {
-
-                if (isAgree) {
+        if (roomVotes != null) {
+            for (Boolean agree : roomVotes.values()) {
+                if (Boolean.TRUE.equals(agree)) {
                     agreeCount++;
                 } else {
                     disagreeCount++;
@@ -650,28 +682,51 @@ public class MafiaPlayServiceImpl implements MafiaPlayService {
             }
         }
 
+        String executionMessage;
+
         if (agreeCount > disagreeCount) {
 
             target.die();
-
             gameParticipantRepository.save(target);
 
-            messagingTemplate.convertAndSend(
-                    "/sub/room/" + roomId + "/game",
-                    Map.of(
-                            "type", "EXECUTION_RESULT",
-                            "message",
-                            nickname + "님이 처형되었습니다."
-                    )
+            executionMessage =
+                    "⚖ " + target.getUser().getNickname()
+                            + "이(가) 처형되었습니다.";
+
+        } else {
+
+            executionMessage =
+                    "⚖ " + target.getUser().getNickname()
+                            + "은(는) 처형되지 않았습니다.";
+        }
+
+        String finalExecutionMessage = executionMessage;
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+
+                        @Override
+                        public void afterCommit() {
+                            messagingTemplate.convertAndSend(
+                                    "/sub/room/" + roomId + "/game",
+                                    Map.of(
+                                            "type", "EXECUTION_RESULT",
+                                            "message", finalExecutionMessage
+                                    )
+                            );
+                        }
+                    }
             );
 
         } else {
+
             messagingTemplate.convertAndSend(
                     "/sub/room/" + roomId + "/game",
                     Map.of(
                             "type", "EXECUTION_RESULT",
-                            "message",
-                            nickname + "님은 처형되지 않았습니다."
+                            "message", finalExecutionMessage
                     )
             );
         }

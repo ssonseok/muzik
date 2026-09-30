@@ -973,9 +973,9 @@ function subscribeRoom() {
 // ================================
 
 function handlePhase(data) {
+    console.log('===== PHASE 수신 =====', data);
 
     const phase = data.phase;
-
     if (!phase) return;
 
     gamePhase.textContent = phase;
@@ -1206,6 +1206,33 @@ function setGeneralChatState(enabled) {
             '메시지를 입력하세요.';
     }
 }
+function showTransitionMessage(title, message, nextPhaseMessage) {
+
+    gameMessage.innerHTML = `
+        <div class="transition-title">${title}</div>
+        <div class="transition-message">${message}</div>
+        <div class="transition-next">${nextPhaseMessage}</div>
+        <div class="transition-count">3</div>
+    `;
+
+    let count = 3;
+
+    const countdown = setInterval(() => {
+        count--;
+
+        const countElement =
+            gameMessage.querySelector('.transition-count');
+
+        if (countElement) {
+            countElement.textContent = count;
+        }
+
+        if (count <= 0) {
+            clearInterval(countdown);
+        }
+
+    }, 1000);
+}
 async function loadVoteTargets() {
 
     try {
@@ -1264,8 +1291,11 @@ function handleGameMessage(data) {
 
         case 'NIGHT_RESULT':
 
-            gameMessage.textContent =
-                data.message || '밤 결과가 발표되었습니다.';
+            showTransitionMessage(
+                    '☠ 밤의 결과',
+                    data.message || '밤 결과가 발표되었습니다.',
+                    '3초 후 낮이 시작됩니다.'
+                );
 
             addSystemChat(
                 data.message || '밤 결과가 발표되었습니다.'
@@ -1277,8 +1307,15 @@ function handleGameMessage(data) {
             break;
 
         case 'VOTE_TIE':
-            gameMessage.textContent =
-                data.message || '투표 결과 동률입니다.';
+            showTransitionMessage(
+                    '⚖️ 투표 결과',
+                    data.message || '투표 결과 동률입니다.',
+                    '3초 후 밤이 시작됩니다.'
+                );
+
+                addSystemChat(
+                    data.message || '투표 결과 동률입니다.'
+                );
 
             break;
 
@@ -1310,8 +1347,11 @@ function handleGameMessage(data) {
             break;
 
         case 'EXECUTION_RESULT':
-            gameMessage.textContent =
-                data.message;
+            showTransitionMessage(
+                    '☠️ 처형 결과',
+                    data.message,
+                    '3초 후 밤이 시작됩니다.'
+                );
 
             addSystemChat(
                 data.message

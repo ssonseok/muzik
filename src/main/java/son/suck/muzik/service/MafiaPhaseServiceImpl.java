@@ -68,7 +68,11 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
                 return;
             }
 
-            startDayPhase(roomId, participantCount);
+            scheduleNextPhase(
+                    roomId,
+                    3,
+                    () -> startDayPhase(roomId, participantCount)
+            );
         });
     }
 
@@ -78,7 +82,11 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
         int duration = 30 + (participantCount * 5);
 
         scheduleNextPhase(roomId, duration, () -> {
-            startVotingPhase(roomId, participantCount);
+            scheduleNextPhase(
+                    roomId,
+                    3,
+                    () -> startVotingPhase(roomId, participantCount)
+            );
         });
     }
 
@@ -95,12 +103,18 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
                     mafiaPlayService.calculateDayResult(roomId);
 
             if (defenseNeeded) {
-                // 처형 후보가 있으므로 최후 반론
-                startDefensePhase(roomId, participantCount);
+                scheduleNextPhase(
+                        roomId,
+                        3,
+                        () -> startDefensePhase(roomId, participantCount)
+                );
 
             } else {
-                // 동률이므로 반론 없이 바로 다음 밤
-                startNightPhase(roomId, participantCount);
+                scheduleNextPhase(
+                        roomId,
+                        3,
+                        () -> startNightPhase(roomId, participantCount)
+                );
             }
         });
     }
@@ -118,7 +132,11 @@ public class MafiaPhaseServiceImpl implements MafiaPhaseService {
                 return;
             }
 
-            startNightPhase(roomId, participantCount);
+            scheduleNextPhase(
+                    roomId,
+                    3,
+                    () -> startNightPhase(roomId, participantCount)
+            );
         });
     }
 
