@@ -1,9 +1,6 @@
 package son.suck.muzik.service;
 
-import son.suck.muzik.domain.GameParticipant;
-import son.suck.muzik.domain.GameRoom;
-import son.suck.muzik.domain.UserStatus;
-import son.suck.muzik.domain.Users;
+import son.suck.muzik.domain.*;
 import son.suck.muzik.dto.CreateRoomRequest;
 import son.suck.muzik.dto.GameRoomDetailResponse;
 import son.suck.muzik.dto.GameRoomResponse;
@@ -15,6 +12,7 @@ import son.suck.muzik.service.GameRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,7 +66,7 @@ public class GameRoomServiceImpl implements GameRoomService {
      */
     @Override
     public List<GameRoomResponse> getWaitingRooms() {
-        return gameRoomRepository.findByRoomStatusOrderByIdDesc("WAITING").stream()
+        return gameRoomRepository.findByRoomTypeAndRoomStatusOrderByIdDesc(RoomType.muzik,"WAITING").stream()
                 .map(GameRoomResponse::new)
                 .collect(Collectors.toList());
     }
