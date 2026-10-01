@@ -2,6 +2,7 @@ const ROOMS_API = `${API_BASE}/mafia/rooms`;
 
 const myInfo = document.getElementById('myInfo');
 const roomListTable = document.getElementById('roomListTable');
+const friendList = document.getElementById('friendList');
 
 const createRoomModal = document.getElementById('createRoomModal');
 const createRoomForm = document.getElementById('createRoomForm');
@@ -10,6 +11,7 @@ const refreshBtn = document.getElementById('refreshBtn');
 const createRoomBtn = document.getElementById('createRoomBtn');
 const cancelCreateBtn = document.getElementById('cancelCreateBtn');
 const logoutBtn = document.getElementById('logoutBtn');
+const gameMenuBtn = document.getElementById('gameMenuBtn');
 
 
 // ================================
@@ -118,6 +120,119 @@ async function fetchRooms() {
         `;
     }
 }
+async function fetchLobbyFriendList() {
+    if (!friendList) {
+        return;
+    }
+
+    const userId = localStorage.getItem('userId');
+
+    if (!userId) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${SERVER_URL}/api/friends?userId=${userId}`,
+            {
+                method: 'GET',
+                headers: getAuthHeaders()
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('친구 목록 조회 실패');
+        }
+
+        const friends = await response.json();
+
+        renderLobbyFriends(friends);
+
+    } catch (error) {
+        console.error('친구 목록 불러오기 실패:', error);
+
+        friendList.innerHTML = `
+            <div class="friend-loading">
+                친구 목록을 불러오지 못했습니다.
+            </div>
+        `;
+    }
+}
+function renderLobbyFriends(friends) {
+    if (!friendList) {
+        return;
+    }
+
+    friendList.innerHTML = '';
+
+    if (!friends || friends.length === 0) {
+        friendList.innerHTML = `
+            <div class="friend-loading">
+                등록된 친구가 없습니다.<br>
+                [관리]에서 친구를 추가해보세요.
+            </div>
+        `;
+        return;
+    }
+
+    friends.forEach(friend => {
+        const item = document.createElement('div');
+        item.className = 'friend-item';
+
+        let statusColor = '#777';
+        let statusText = '오프라인';
+        let nameClass = 'offline';
+
+        switch (friend.status) {
+            case 'ONLINE':
+                statusColor = '#6fa36f';
+                statusText = '온라인';
+                nameClass = 'online';
+                break;
+
+            case 'IN_ROOM':
+                statusColor = '#b08a4a';
+                statusText = '방 입장';
+                nameClass = 'online';
+                break;
+
+            case 'PLAYING':
+                statusColor = '#8f3b3b';
+                statusText = '게임 중';
+                nameClass = 'playing';
+                break;
+
+            case 'OFFLINE':
+            default:
+                statusColor = '#777';
+                statusText = '오프라인';
+                nameClass = 'offline';
+                break;
+        }
+
+        item.innerHTML = `
+            <div class="friend-name-area">
+                <span
+                    class="friend-status"
+                    style="background-color: ${statusColor};">
+                </span>
+
+                <span class="friend-name ${nameClass}">
+                    ${escapeHtml(friend.friendNickname)}
+                </span>
+            </div>
+
+            <span
+                class="friend-status-text"
+                style="color: ${statusColor};">
+                ${statusText}
+            </span>
+        `;
+
+        friendList.appendChild(item);
+    });
+}
+
 
 
 // ================================
@@ -374,7 +489,7 @@ function closeCreateModal() {
 
 
 // ================================
-// 로그아웃
+// 로그아웃,게임메뉴로
 // ================================
 
 function logout() {
@@ -386,21 +501,20 @@ function logout() {
 
     window.location.href = 'index.html';
 }
+function goToGameMenu() {
+    window.location.href = 'gameMenu.html';
+}
 
 
 // ================================
 // 이벤트
 // ================================
-
 refreshBtn.addEventListener('click', fetchRooms);
-
 createRoomBtn.addEventListener('click', openCreateModal);
-
 cancelCreateBtn.addEventListener('click', closeCreateModal);
-
 logoutBtn.addEventListener('click', logout);
-
 createRoomForm.addEventListener('submit', createRoom);
+gameMenuBtn.addEventListener('click', goToGameMenu);
 
 
 // ================================
@@ -409,3 +523,5 @@ createRoomForm.addEventListener('submit', createRoom);
 
 loadMyInfo();
 fetchRooms();
+fetchLobbyFriendList();
+setInterval(fetchLobbyFriendList, 3000);

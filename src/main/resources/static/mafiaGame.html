@@ -3,91 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <title>MAFIA GAME - 대기실</title>
+    <link rel="stylesheet" href="mafiaGame.css">
 </head>
-
 <body>
-
-<header>
-    <div>
-        <h1>MAFIA GAME</h1>
+<header class="mafia-header">
+    <div class="mafia-logo">
+        MAFIA GAME
     </div>
 
-    <div>
-        <span>
-            <b id="myInfo">불러오는 중...</b>님 환영합니다!
-        </span>
+    <div class="user-profile-bar">
+    <span class="welcome-text">
+        <b id="myInfo"
+           onclick="location.href='mafiaMyPage.html'"
+           style="cursor: pointer;">
+            불러오는 중...
+        </b>님 환영합니다!
+    </span>
 
-        <button type="button" id="logoutBtn">로그아웃</button>
+        <button type="button"
+                id="gameMenuBtn"
+                class="mafia-btn mafia-btn-dark">
+            게임 메뉴
+        </button>
+
+        <button type="button"
+                id="logoutBtn"
+                class="mafia-btn mafia-btn-dark">
+            로그아웃
+        </button>
     </div>
+
 </header>
 
+<div class="mafia-container">
+    <main class="main-content">
 
-<main>
+        <div class="content-header">
+            <div class="section-title">
+                ROOMS
+            </div>
 
-    <div>
-        <h2>ROOMS</h2>
+            <div class="room-actions">
+                <button type="button"
+                        id="refreshBtn"
+                        class="mafia-btn mafia-btn-blood">
+                    새로고침
+                </button>
 
-        <div>
-            <button type="button" id="refreshBtn">
-                새로고침
-            </button>
+                <button type="button"
+                        id="createRoomBtn"
+                        class="mafia-btn mafia-btn-blood">
+                    + 방 만들기
+                </button>
+            </div>
+        </div>
 
-            <button type="button" id="createRoomBtn">
-                + 방 만들기
+        <div class="table-container">
+            <table class="mafia-table">
+                <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>방 제목</th>
+                    <th>인원</th>
+                    <th>상태</th>
+                    <th>입장</th>
+                </tr>
+                </thead>
+
+                <tbody id="roomListTable">
+                <tr>
+                    <td colspan="5">
+                        방 목록을 불러오는 중...
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <aside class="sidebar">
+
+        <div class="section-title friend-title">
+            <span>FRIENDS</span>
+
+            <button type="button"
+                    class="mafia-btn mafia-btn-small"
+                    onclick="location.href='friend.html'">
+                관리
             </button>
         </div>
-    </div>
 
+        <div class="friend-list" id="friendList">
+            <div class="friend-loading">
+                친구 목록 불러오는 중...
+            </div>
+        </div>
 
-    <!-- 방 목록 -->
-    <table>
-        <thead>
-        <tr>
-            <th>NO</th>
-            <th>방 제목</th>
-            <th>인원</th>
-            <th>상태</th>
-            <th>입장</th>
-        </tr>
-        </thead>
+    </aside>
 
-        <tbody id="roomListTable">
-        <tr>
-            <td colspan="5">
-                방 목록을 불러오는 중...
-            </td>
-        </tr>
-        </tbody>
-    </table>
+</div>
 
-</main>
+<div class="modal-overlay"
+     id="createRoomModal"
+     style="display: none;">
+    <div class="modal-content">
 
-
-<!-- 방 생성 모달 -->
-<div id="createRoomModal" style="display: none;">
-
-    <div>
-
-        <h2>마피아 게임방 만들기</h2>
+        <div class="modal-title">
+            CREATE MAFIA ROOM
+        </div>
 
         <form id="createRoomForm">
 
-            <div>
-                <label for="roomName">방 제목</label>
+            <div class="form-group">
+                <label for="roomName">
+                    방 제목
+                </label>
 
                 <input
                         type="text"
                         id="roomName"
+                        class="form-control"
                         placeholder="방 제목을 입력하세요."
                         maxlength="30"
                         required>
             </div>
 
+            <div class="form-group">
+                <label for="maxPlayers">
+                    최대 인원
+                </label>
 
-            <div>
-                <label for="maxPlayers">최대 인원</label>
-
-                <select id="maxPlayers">
+                <select id="maxPlayers"
+                        class="form-control">
                     <option value="4">4명</option>
                     <option value="5">5명</option>
                     <option value="6">6명</option>
@@ -100,15 +148,17 @@
                 </select>
             </div>
 
-
-            <div>
+            <div class="modal-actions">
                 <button
                         type="button"
-                        id="cancelCreateBtn">
+                        id="cancelCreateBtn"
+                        class="mafia-btn mafia-btn-dark">
                     취소
                 </button>
 
-                <button type="submit">
+                <button
+                        type="submit"
+                        class="mafia-btn mafia-btn-blood">
                     방 만들기
                 </button>
             </div>
@@ -116,9 +166,7 @@
         </form>
 
     </div>
-
 </div>
-
 
 <script src="config.js"></script>
 <script src="mafiaGame.js"></script>

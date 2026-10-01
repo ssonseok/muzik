@@ -1,0 +1,518 @@
+* {
+  box-sizing: border-box;
+  }
+
+html,
+body {
+margin: 0;
+padding: 0;
+width: 100%;
+min-height: 100%;
+}
+
+body {
+background:
+radial-gradient(circle at 50% 20%, rgba(90, 20, 20, 0.18), transparent 45%),
+linear-gradient(135deg, #0b0b0b 0%, #151515 50%, #090909 100%);
+color: #d6d0c5;
+font-family: Georgia, "Times New Roman", serif;
+min-height: 100vh;
+}
+
+button,
+input,
+select {
+font-family: inherit;
+}
+
+button {
+cursor: pointer;
+}
+
+/* header */
+
+.mafia-header {
+height: 76px;
+padding: 0 42px;
+
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+background: rgba(8, 8, 8, 0.96);
+border-bottom: 1px solid #4a3b32;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+
+}
+
+.mafia-logo {
+color: #c8b9a3;
+font-size: 28px;
+font-weight: bold;
+letter-spacing: 5px;
+text-shadow: 2px 2px 4px #000;
+}
+
+.user-profile-bar {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.welcome-text {
+color: #8f8a82;
+font-size: 14px;
+}
+
+.welcome-text b {
+color: #b8a58e;
+transition: color 0.2s;
+}
+
+.welcome-text b:hover {
+color: #9b3b3b;
+}
+
+/* layout */
+
+.mafia-container {
+width: calc(100% - 80px);
+max-width: 1500px;
+min-height: calc(100vh - 116px);
+
+margin: 20px auto;
+
+display: grid;
+grid-template-columns: minmax(0, 1fr) 280px;
+gap: 20px;
+
+}
+
+.main-content,
+.sidebar {
+background: rgba(18, 18, 18, 0.94);
+border: 1px solid #3d332d;
+box-shadow:
+0 8px 30px rgba(0, 0, 0, 0.5),
+inset 0 0 30px rgba(0, 0, 0, 0.25);
+}
+
+/* section header */
+
+.content-header {
+height: 72px;
+padding: 0 24px;
+
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+border-bottom: 1px solid #3d332d;
+background: rgba(10, 10, 10, 0.7);
+
+}
+
+.section-title {
+color: #c4b6a3;
+font-size: 22px;
+font-weight: bold;
+letter-spacing: 4px;
+text-shadow: 1px 1px 3px #000;
+}
+
+.room-actions {
+display: flex;
+gap: 8px;
+}
+
+/* buttons */
+
+.mafia-btn {
+border: 1px solid #57473c;
+padding: 9px 15px;
+
+background: #191716;
+color: #bfb5a8;
+
+font-size: 13px;
+letter-spacing: 0.5px;
+
+transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+
+}
+
+.mafia-btn:hover {
+background: #28211e;
+color: #e0d6c9;
+border-color: #765d4e;
+}
+
+.mafia-btn:active {
+transform: translateY(1px);
+}
+
+.mafia-btn-blood {
+background: #351516;
+border-color: #633234;
+color: #c7aaa2;
+}
+
+.mafia-btn-blood:hover {
+background: #4b1b1d;
+border-color: #884447;
+color: #e1c5bf;
+}
+
+.mafia-btn-dark {
+background: #121212;
+border-color: #3b3631;
+}
+
+.mafia-btn-small {
+padding: 4px 10px;
+font-size: 12px;
+}
+
+/* table */
+
+.table-container {
+width: 100%;
+overflow-x: auto;
+}
+
+.mafia-table {
+width: 100%;
+border-collapse: collapse;
+}
+
+.mafia-table thead {
+background: #141414;
+}
+
+.mafia-table th {
+height: 48px;
+
+color: #8f8275;
+font-size: 12px;
+font-weight: normal;
+letter-spacing: 1px;
+
+border-bottom: 1px solid #40362f;
+
+}
+
+.mafia-table td {
+height: 58px;
+padding: 10px 14px;
+
+text-align: center;
+
+color: #b5afa7;
+font-size: 14px;
+
+border-bottom: 1px solid #292624;
+
+}
+
+.mafia-table tbody tr {
+transition: background 0.2s;
+}
+
+.mafia-table tbody tr:hover {
+background: rgba(75, 27, 29, 0.18);
+}
+
+.mafia-table tbody tr:hover td {
+color: #d0c6ba;
+}
+
+.join-room-btn {
+padding: 6px 16px;
+
+background: #211817;
+border: 1px solid #63403e;
+
+color: #bd9f99;
+
+font-size: 12px;
+cursor: pointer;
+
+transition: all 0.2s;
+
+}
+
+.join-room-btn:hover {
+background: #461c1e;
+border-color: #874247;
+color: #e0c4be;
+}
+
+/* friends */
+
+.sidebar {
+min-height: 500px;
+}
+
+.friend-title {
+height: 72px;
+padding: 0 18px;
+
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+border-bottom: 1px solid #3d332d;
+
+}
+
+.friend-list {
+padding: 10px;
+}
+
+.friend-loading {
+padding: 20px 0;
+
+color: #6e6963;
+font-size: 13px;
+text-align: center;
+
+}
+
+/* modal */
+
+.modal-overlay {
+position: fixed;
+inset: 0;
+z-index: 1000;
+
+display: none;
+align-items: center;
+justify-content: center;
+
+background: rgba(0, 0, 0, 0.78);
+backdrop-filter: blur(3px);
+
+}
+
+.modal-content {
+width: 420px;
+max-width: calc(100% - 40px);
+
+padding: 30px;
+
+background:
+    linear-gradient(
+        rgba(25, 23, 22, 0.97),
+        rgba(13, 13, 13, 0.98)
+    );
+
+border: 1px solid #5a4438;
+box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    inset 0 0 40px rgba(0, 0, 0, 0.4);
+
+}
+
+.modal-title {
+margin-bottom: 28px;
+
+color: #c8b9a5;
+font-size: 22px;
+font-weight: bold;
+letter-spacing: 2px;
+text-align: center;
+
+}
+
+.form-group {
+margin-bottom: 20px;
+}
+
+.form-group label {
+display: block;
+margin-bottom: 8px;
+
+color: #918579;
+font-size: 13px;
+
+}
+
+.form-control {
+width: 100%;
+height: 42px;
+
+padding: 0 12px;
+
+background: #111111;
+border: 1px solid #413832;
+
+color: #d0c8be;
+outline: none;
+
+font-size: 14px;
+
+}
+
+.form-control::placeholder {
+color: #55504b;
+}
+
+.form-control:focus {
+border-color: #704044;
+box-shadow: 0 0 8px rgba(112, 64, 68, 0.2);
+}
+
+select.form-control {
+cursor: pointer;
+}
+
+.modal-actions {
+display: flex;
+gap: 10px;
+margin-top: 28px;
+}
+
+.modal-actions .mafia-btn {
+flex: 1;
+}
+
+/* empty room */
+
+.mafia-table td[colspan] {
+height: 160px;
+color: #68625c;
+}
+
+/* responsive */
+
+@media (max-width: 900px) {
+
+.mafia-container {
+    width: calc(100% - 30px);
+    grid-template-columns: 1fr;
+}
+
+.sidebar {
+    min-height: 300px;
+}
+
+.mafia-header {
+    padding: 0 20px;
+}
+
+.mafia-logo {
+    font-size: 22px;
+    letter-spacing: 3px;
+}
+
+.welcome-text {
+    display: none;
+}
+
+}
+
+@media (max-width: 600px) {
+
+.mafia-header {
+    height: auto;
+    min-height: 70px;
+    padding: 14px 16px;
+
+    gap: 10px;
+}
+
+.mafia-logo {
+    font-size: 18px;
+    letter-spacing: 2px;
+}
+
+.user-profile-bar {
+    gap: 5px;
+}
+
+.mafia-btn {
+    padding: 7px 9px;
+    font-size: 11px;
+}
+
+.content-header {
+    height: auto;
+    min-height: 70px;
+    padding: 14px;
+
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.section-title {
+    font-size: 18px;
+}
+
+.mafia-table th,
+.mafia-table td {
+    white-space: nowrap;
+    padding: 8px;
+}
+
+.modal-content {
+    padding: 22px;
+}
+}
+.friend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 10px;
+    border-bottom: 1px solid #292624;
+}
+
+.friend-item:last-child {
+    border-bottom: none;
+}
+
+.friend-name-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.friend-status {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 5px currentColor;
+}
+
+.friend-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.friend-name.online {
+    color: #c8c0b6;
+}
+
+.friend-name.playing {
+    color: #9b4a4a;
+}
+
+.friend-name.offline {
+    color: #66615c;
+}
+
+.friend-status-text {
+    flex-shrink: 0;
+    margin-left: 10px;
+    font-size: 11px;
+}
+
+
+
