@@ -522,3 +522,10 @@ async function navigateTo(pageName) {
         console.error('화면 전환 중 오류 발생:', error);
     }
 }
+document.addEventListener('DOMContentLoaded', function() {
+    const accessToken = localStorage.getItem('accessToken');
+
+    if (accessToken) {
+        navigateTo('gamemenu');
+    }
+});

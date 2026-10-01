@@ -502,7 +502,7 @@ function logout() {
     window.location.href = 'index.html';
 }
 function goToGameMenu() {
-    window.location.href = 'gameMenu.html';
+    window.location.href = 'index.html';
 }
 
 
