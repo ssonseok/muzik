@@ -1,3 +1,15 @@
+const params = new URLSearchParams(window.location.search);
+const from = params.get('from');
+
+const backLobbyBtn = document.getElementById('backLobbyBtn');
+
+backLobbyBtn.addEventListener('click', function () {
+    if (from === 'mafia') {
+        window.location.href = 'mafiaGame.html';
+    } else {
+        window.location.href = 'lobby.html';
+    }
+});
 const userId = localStorage.getItem('userId');
 const nickname = localStorage.getItem('nickname');
 
