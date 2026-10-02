@@ -514,7 +514,7 @@ async function navigateTo(pageName) {
             initLoginPage();
         } else if (pageName === 'signup' && typeof initSignupPage === 'function') {
             initSignupPage();
-        } else if (pageName === 'gamemenu' && typeof initGameMenuPage === 'function') {
+        } else if (pageName === 'gameMenu' && typeof initGameMenuPage === 'function') {
             initGameMenuPage();
         }
 
@@ -526,6 +526,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const accessToken = localStorage.getItem('accessToken');
 
     if (accessToken) {
-        navigateTo('gamemenu');
+        navigateTo('gameMenu');
     }
 });
