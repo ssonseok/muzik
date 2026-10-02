@@ -49,4 +49,5 @@ public class UserController {
     public ResponseEntity<UserStatsResponseDto> getUserStats(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok(userService.getUserStats(userId));
     }
+    //로그아웃 미구현(10.2)
 }
