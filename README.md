@@ -1,12 +1,26 @@
-# Muzik
+# Suckerson's AZIT
 
-음악 퀴즈와 실시간 Mafia 게임을 즐길 수 있는 웹 서비스
+> **로그인 기반 실시간 게임부터 간단한 미니 서비스까지 가볍게 즐길 수 있는 웹 서비스**
 
-## Live Demo
+### 실시간 게임
+로그인 후 다른 사용자와 함께 즐기는 실시간 게임
 
-**서비스 바로가기**
+- 노래 제목 맞추기
+- 마피아
+- 라이어(개발 예정)
 
-https://suckerson.shop
+### 미니 서비스
+로그인 없이 간단하게 이용할 수 있는 미니 서비스
+
+- 룰렛
+- 숫자를 드래그하여 합 10 만들기
+- Inst 설정
+
+---
+
+## 서비스 주소
+
+**https://suckerson.shop**
 
 ---
 
@@ -94,19 +108,26 @@ https://suckerson.shop
 
 ### Backend
 
-작성 예정
+- Java 17
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- JWT
+- WebSocket / STOMP
 
 ### Frontend
 
-작성 예정
+- HTML
+- CSS
+- JavaScript
 
 ### Database
 
-작성 예정
+- MySQL
 
 ### Deployment
 
-작성 예정
+- Cloudtype
 
 ---
 
