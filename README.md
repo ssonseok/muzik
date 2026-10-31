@@ -188,7 +188,7 @@ https://suckerson.shop
 
 ### 배포 환경
 
-작성 예정
+- Cloudtype
 
 ---
 
