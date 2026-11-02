@@ -211,9 +211,3 @@ https://suckerson.shop
 - WebSocket·STOMP 기반 실시간 통신 구현
 - 실시간 멀티플레이 게임 로직 개발
 - 웹 서비스 배포 및 운영
-
----
-
-## GitHub
-
-작성 예정
