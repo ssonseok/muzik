@@ -120,7 +120,7 @@ Suckerson's AZIT는 실시간 멀티플레이 게임과 다양한 미니 서비�
 
 ## 시스템 아키텍처
 
-작성 예정
+![시스템 아키텍처](./images/SystemArchitecture.png)
 
 ---
 
