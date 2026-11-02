@@ -63,17 +63,24 @@ Suckerson's AZIT는 실시간 멀티플레이 게임과 다양한 미니 서비�
 
 ## 서비스 화면
 
+### 방 목록
+
+게임 로비(현재는 muzik 화면)
+![서비스 화면](./images/suckersonGameRooms.png)
+
 ### 음악 퀴즈
-유저들과 실제 플레이 화면
+muzik 플레이 화면
 ![서비스 화면](./images/suckersonMuzikPlaying.png)
 
-### Mafia 방
 
-스크린샷 추가 예정
 
 ### Mafia 게임
 
-스크린샷 추가 예정
+mafia 플레이 화면(마피아 제외 직업 화면)
+![서비스 화면](./images/suckerosnMafia1.png)
+---
+mafia 플레이 화면(마피아 전용 화면)
+![서비스 화면](./images/suckerosnMafia2.png)
 
 ### 비로그인 서비스
 드래그로 10을 맞추는 미니 게임
