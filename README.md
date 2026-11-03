@@ -155,11 +155,20 @@ mafia 플레이 화면(마피아 전용 화면)
 
 ### ERD
 
-ERD 추가 예정
+![데이터베이스](./images/suckersonERD.png)
 
 ### 주요 테이블
 
-작성 예정
+| 테이블명 | 설명 |
+|---|---|
+| `users` | 회원 정보 및 로그인 정보 관리 |
+| `user_status` | 사용자 접속 상태 및 현재 참여 중인 방 정보 관리 |
+| `user_friend` | 사용자 간 친구 관계 및 친구 요청 상태 관리 |
+| `game_room` | 게임방 정보, 게임 설정 및 진행 상태 관리 |
+| `game_participant` | 게임방 참가자 정보, 점수, 역할 및 생존 상태 관리 |
+| `game_history` | 게임 플레이 기록 관리 |
+| `game_history_result` | 사용자별 최종 점수 및 순위 관리 |
+| `music` | 노래 제목, 가수, 장르, 발매 연도 및 YouTube 영상 정보 관리 |
 
 ---
 
